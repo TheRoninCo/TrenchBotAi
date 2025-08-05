@@ -1,0 +1,7 @@
+[default]
+simd = "avx2"  # or "sse4", "neon"
+gpu = "cuda"   # or "metal", "vulkan", "none"
+
+[overrides]
+free_tier_max_batch = 4
+pro_tier_max_batch = 8

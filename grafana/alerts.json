@@ -1,0 +1,10 @@
+{
+    "alert": {
+      "name": "Volatility Spike Detected",
+      "condition": "stddev_over_time(mev_profit[1h]) > 5000",
+      "annotations": {
+        "summary": "Market volatility requires wider profit tiers",
+        "action": "Run calibrate_rations.wl with WidenTiers mode"
+      }
+    }
+  }

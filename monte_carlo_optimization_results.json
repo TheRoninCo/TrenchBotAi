@@ -1,0 +1,40 @@
+{
+  "timestamp": "2025-08-04T23:26:39.194697",
+  "baseline_ms": 2496.0,
+  "optimizations": [
+    {
+      "test": "optimized_monte_carlo",
+      "simulations": 10000,
+      "time_horizon": 21,
+      "var_95": 0.19448737483017975,
+      "var_99": 0.25247837196949985,
+      "cvar_95": 0.23026857116960064,
+      "time_ms": 1576.5430927276611,
+      "optimization": "pre_calc_bulk_random"
+    },
+    {
+      "test": "fast_monte_carlo",
+      "simulations": 1000,
+      "time_horizon": 7,
+      "var_95": 0.10672505190055859,
+      "var_99": 0.15726723467839465,
+      "cvar_95": 0.13964146809730157,
+      "time_ms": 204.41102981567383,
+      "optimization": "reduced_sims_linear_approx"
+    },
+    {
+      "test": "analytical_var",
+      "time_horizon": 21,
+      "portfolio_volatility": 0.2264950330581225,
+      "var_95": 0.08936918552788656,
+      "var_99": 0.12636639850326087,
+      "cvar_95": 0.10724302263346387,
+      "time_ms": 0.007152557373046875,
+      "optimization": "analytical_closed_form"
+    }
+  ],
+  "best_optimization": "analytical_var",
+  "best_speedup": 348966.0928,
+  "fastest_time_ms": 0.007152557373046875,
+  "total_test_time_ms": 1781.3701629638672
+}

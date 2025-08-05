@@ -1,0 +1,14 @@
+{
+    "terminal.integrated.automationProfile.windows": {
+        
+    }
+    {
+        "metadata": {
+          "total_size": 16060522496
+        },
+        "weight_map": {
+          "lm_head.weight": "model-00004-of-00004.safetensors",
+          "model.embed_tokens.weight": "model-00001-of-00004.safetensors",
+          ...
+          }
+        }}

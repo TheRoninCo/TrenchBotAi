@@ -1,0 +1,22 @@
+//! Alpha wallet detection and tracking system
+use anyhow::Result;
+
+pub struct AlphaWalletDetector {
+    pub success_threshold: f64,     // Minimum 70% win rate
+    pub min_trades: u32,           // At least 10 trades to qualify
+    pub profit_threshold: f64,     // Minimum total profit
+}
+
+impl AlphaWalletDetector {
+    pub async fn scan_for_alpha_wallets(&self) -> Result<Vec<AlphaWallet>> {
+        // Your alpha detection algorithm goes here
+        // This is where you'll analyze on-chain data for successful patterns
+        Ok(vec![])
+    }
+    
+    pub async fn analyze_wallet_pattern(&self, wallet: &str) -> Result<TradingPattern> {
+        // Analyze specific wallet's trading pattern
+        // This will feed into your RunPod training data
+        unimplemented!()
+    }
+}

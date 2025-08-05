@@ -1,0 +1,14 @@
+services:
+  whale-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    volumes:
+      - .:/app
+      - cargo-registry:/usr/local/cargo/registry
+    ports:
+      - "9091:9091" # Metrics
+      - "8888:8888" # Jupyter
+
+volumes:
+  cargo-registry:

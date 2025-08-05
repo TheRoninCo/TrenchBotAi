@@ -1,0 +1,8 @@
+[gorilla]
+threshold = 50000  # SOL/hour
+
+[shark]
+max_holding_hours = 2.0
+
+[kraken]
+wash_trade_ratio = 0.3

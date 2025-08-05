@@ -1,0 +1,28 @@
+FROM nvidia/cuda:12.1-base-ubuntu22.04
+
+# System dependencies
+RUN apt-get update && apt-get install -y \
+    python3-pip \
+    pkg-config \
+    libssl-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# ML stack
+RUN pip install --no-cache-dir \
+    torch==2.1.0+cu121 \
+    --index-url https://download.pytorch.org/whl/cu121 \
+    polars \
+    matplotlib
+
+# Rust toolchain
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+WORKDIR /app
+COPY . .
+
+# Build with GPU acceleration
+RUN cargo build --release --features training,gpu
+
+# Training entrypoint
+CMD ["./target/release/whale-sonar", "train", "--gpu"]

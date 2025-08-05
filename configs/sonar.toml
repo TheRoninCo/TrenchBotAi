@@ -1,0 +1,16 @@
+[rpc]
+mainnet = "wss://api.mainnet-beta.solana.com"
+jito = "wss://jito-mainnet.rpcpool.com" 
+
+[personality]
+gorilla_threshold = 50000.0  # USD
+shark_holding_hours = 2.0
+kraken_wash_ratio = 0.25
+
+[ml]
+model_path = "./configs/models/wash_detector.onnx"
+retrain_interval_hours = 24
+
+[blacklist]
+cooldown_hours = 24
+auto_blacklist_threshold = 0.9

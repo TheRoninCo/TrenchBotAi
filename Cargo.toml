@@ -1,0 +1,61 @@
+[package]
+name = "trenchbot-dex"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+
+[dependencies]
+# --- Core ---
+tokio = { version = "1.32", features = ["full", "rt-multi-thread"] }
+anyhow = "1.0"
+thiserror = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+tracing = "0.1"
+tracing-subscriber = "0.3"
+chrono = { version = "0.4", features = ["serde"] }
+figment = { version = "0.10", features = ["toml", "env", "json"] }
+toml = "0.8"
+
+# --- Monitoring (Optional) ---
+metrics-exporter-prometheus = { version = "0.8", optional = true }
+
+# --- Solana ---
+solana-client = "1.17.5"
+solana-sdk = "1.17.5"
+solana-program = "1.17.5"
+
+# --- APIs ---
+reqwest = { version = "0.11", features = ["json", "stream"] }
+tokio-tungstenite = "0.20"
+
+# --- AI SDK ---
+anthropic = "0.0.8"
+async-trait = "0.1"
+
+# --- MEV ---
+jito-solana = "0.1.1"
+
+# --- Optional AI (safe to keep for CPU) ---
+tch = { version = "0.14", optional = true }
+
+# --- Performance ---
+rayon = "1.8"
+ndarray = { version = "0.15", features = ["rayon"] }
+simba = "0.8"
+wide = "0.7"  # SIMD operations
+
+[dev-dependencies]
+criterion = "0.5"
+rand = "0.8"
+
+[features]
+default = []
+monitoring = ["metrics-exporter-prometheus"]
+gpu = ["tch"]
+cuda = []  # No effect unless you want to add GPU/AI later
+
+[profile.release]
+lto = true
+codegen-units = 1
+panic = "abort"

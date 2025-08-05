@@ -1,0 +1,14 @@
+[connections]
+mainnet_rpc = "https://api.mainnet-beta.solana.com"
+mainnet_ws = "wss://api.mainnet-beta.solana.com"
+jito_rpc = "wss://jito-mainnet.rpcpool.com"
+helius_api_key = "your_api_key_here"
+
+[performance]
+min_slot_leadership_time = 500 # ms
+max_retries = 3
+retry_delay = 1000 # ms
+
+[security]
+tx_simulation = true
+preflight_checks = true

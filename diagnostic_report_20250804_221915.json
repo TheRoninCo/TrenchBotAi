@@ -1,0 +1,22 @@
+{
+  "timestamp": "2025-08-04T22:19:15.922049",
+  "system_info": {
+    "platform": "Darwin",
+    "architecture": "x86_64",
+    "python_version": "3.13.5",
+    "timestamp": "2025-08-04T22:18:14.225431",
+    "cpu": "Intel(R) Core(TM) i5-3210M CPU @ 2.50GHz",
+    "cpu_cores": 4,
+    "memory_gb": 16.0
+  },
+  "health_score": 95,
+  "issues": [],
+  "warnings": [
+    "Compilation check timed out (project may be large)"
+  ],
+  "recommendations": [
+    "Consider GPU acceleration for 10-100x speedup on AI workloads",
+    "Run benchmarks to establish performance baseline",
+    "Install psutil for memory monitoring: pip install psutil"
+  ]
+}

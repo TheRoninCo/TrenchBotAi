@@ -1,0 +1,16 @@
+[environment]
+mode = "production" # production, staging, development
+config_version = "1.0"
+
+[paths]
+config_dir = "./configs"
+model_dir = "./models"
+data_dir = "./data"
+
+[logging]
+level = "info" # trace, debug, info, warn, error
+format = "json" # json, pretty, compact
+
+[telemetry]
+metrics_port = 9090
+traces_endpoint = "http://localhost:4317"

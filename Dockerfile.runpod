@@ -1,0 +1,36 @@
+# RunPod GPU-optimized container
+FROM nvidia/cuda:12.1-devel-ubuntu22.04
+RUN apt-get install -y python3-pip && \
+    pip install polars matplotlib jupyter
+# Install Rust
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+# Install PyTorch for GPU acceleration
+RUN pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+
+# Set working directory
+WORKDIR /app
+
+# Copy source
+COPY . .
+
+# Build with GPU features
+RUN cargo build --release --features gpu,training
+
+# Set GPU environment
+ENV CUDA_VISIBLE_DEVICES=0
+ENV PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:512
+
+# Entry point
+CMD ["./target/release/mev-bot", "--mode", "gpu"]
+FROM rust:1.70-slim as builder
+WORKDIR /app
+COPY . .
+RUN cargo build --release
+
+FROM debian:bullseye-slim
+COPY --from=builder /app/target/release/whale-sonar /usr/local/bin/
+COPY configs /configs
+
+CMD ["whale-sonar", "--config", "/configs/sonar.toml"]

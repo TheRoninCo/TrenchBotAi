@@ -1,0 +1,49 @@
+{
+  "timestamp": "2025-08-04T22:11:17.720678",
+  "total_time_ms": 7035.514831542969,
+  "component_time_ms": 6821.5906620025635,
+  "results": [
+    {
+      "test": "quantum_simulation",
+      "data_points": 1000,
+      "coherence": 2.7819737666600918e-05,
+      "time_ms": 55.03273010253906
+    },
+    {
+      "test": "transformer_attention",
+      "sequence_length": 256,
+      "feature_dim": 64,
+      "num_heads": 8,
+      "attention_diversity": 5.437041203310608,
+      "time_ms": 4264.798164367676
+    },
+    {
+      "test": "graph_pattern_detection",
+      "transactions": 500,
+      "wallets": 100,
+      "patterns": {
+        "sandwich_attacks": 5,
+        "wash_trading": 1,
+        "mev_bots": 0,
+        "high_frequency": 0
+      },
+      "time_ms": 3.677845001220703
+    },
+    {
+      "test": "monte_carlo_simulation",
+      "simulations": 10000,
+      "time_horizon": 21,
+      "var_95": 0.1734078779409901,
+      "var_99": 0.23354284948183524,
+      "cvar_95": 0.21003706211810183,
+      "time_ms": 2496.124029159546
+    },
+    {
+      "test": "competitive_analysis",
+      "whales_analyzed": 10,
+      "signals_generated": 6,
+      "prediction_confidence": 0.5449999999999999,
+      "time_ms": 1.9578933715820312
+    }
+  ]
+}

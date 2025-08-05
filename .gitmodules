@@ -1,0 +1,3 @@
+[submodule "openbook-v2"]
+	path = openbook-v2
+	url = https://github.com/openbook-dex/openbook-v2.git

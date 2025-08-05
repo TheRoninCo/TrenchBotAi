@@ -1,0 +1,9 @@
+[mongo]
+uri = "mongodb://localhost:27017"
+db = "mev"
+collection = "bundles"
+
+[s3]
+bucket = "mev-archive"
+batch_size = 100
+compress = "zstd"  # Options: none, zstd, snappy

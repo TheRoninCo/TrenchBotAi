@@ -1,0 +1,49 @@
+# TrenchBot SDK Configuration
+default_permission = "prompt"
+
+# Tool-specific permissions
+[tools.transfer]
+level = "prompt"
+description = "Financial transfer operations - requires confirmation"
+
+[tools.withdraw]
+level = "prompt"
+description = "Withdrawal operations - requires confirmation"
+
+[tools.trade]
+level = "prompt"
+description = "Trading operations - requires confirmation for large amounts"
+
+[tools.delete]
+level = "never"
+description = "Destructive delete operations - always blocked"
+
+[tools.format]
+level = "never"
+description = "Format operations - always blocked"
+
+[tools.query]
+level = "always"
+description = "Read-only query operations - always allowed"
+
+[tools.analyze]
+level = "always"
+description = "Analysis operations - always allowed"
+
+# Handler configuration
+[handlers]
+enable_default = true
+enable_trench = true
+enable_security = false
+trench_safety_enabled = true
+security_require_all_confirmation = false
+blocked_tools = ["rm", "delete", "format", "drop_table", "truncate"]
+rate_limit_per_minute = 60
+
+# Security configuration
+[security]
+log_all_tool_usage = true
+require_confirmation_for_financial = true
+require_confirmation_for_destructive = true
+max_transaction_amount = 1000.0
+production_confirmation_required = true

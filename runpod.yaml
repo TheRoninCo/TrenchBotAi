@@ -1,0 +1,8 @@
+containerDisk: 50G
+image: your-registry/whale-train:gpu
+gpuType: A100
+env:
+  - name: CUDA_VISIBLE_DEVICES
+    value: "0"
+  - name: PYTORCH_CUDA_ALLOC_CONF
+    value: "max_split_size_mb:512"

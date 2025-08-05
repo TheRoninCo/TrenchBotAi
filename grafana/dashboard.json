@@ -1,0 +1,58 @@
+{
+        "panels": [
+            {
+                "title": "Whale-Driven MEV Success",
+                "type": "graph",
+                "datasource": "Prometheus",
+                "targets": [{
+                    "expr": "sum by(personality) (mev_whale_success)",
+                    "legendFormat": "{{personality}}"
+                }],
+                "gridPos": {"x":0,"y":0,"w":12,"h":8}
+            },
+            {
+                "title": "Optimal Tip by Whale Type",
+                "type": "heatmap",
+                "datasource": "Prometheus",
+                "targets": [{
+                    "expr": "histogram_quantile(0.9, sum by(personality,le) (rate(mev_tip_lamports_bucket[1h])))",
+                    "format": "heatmap"
+                }],
+                "gridPos": {"x":0,"y":8,"w":12,"h":8}
+            },
+            {
+                "title": "Real-Time Whale Alerts",
+                "type": "alertlist",
+                "datasource": "Prometheus",
+                "targets": [{
+                    "expr": "whales_detected_total > 10"
+                }],
+                "gridPos": {"x":12,"y":0,"w":12,"h":4}
+            }
+        ],
+        "templating": {
+            "list": [{
+                "name": "whale_type",
+                "query": "label_values(personality)",
+                "label": "Whale Personality"
+            }]
+        }, 
+        "panels": [{
+            "title": "Predicted vs Actual Profit",
+            "type": "timeseries",
+            "datasource": "Prometheus",
+            "targets": [{
+                "expr": "predicted_profit - actual_profit",
+                "legendFormat": "Deviation"
+            }],
+            "gridPos": {"x":0,"y":12,"w":12,"h":6}
+        },{
+            "title": "Pool Imbalance Heatmap",
+            "type": "heatmap",
+            "datasource": "Prometheus",
+            "targets": [{
+                "expr": "pool_imbalance_by_token"
+            }],
+            "gridPos": {"x":12,"y":12,"w":12,"h":6}
+        }]
+}

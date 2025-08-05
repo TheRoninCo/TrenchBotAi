@@ -1,0 +1,9 @@
+battle/            // ⚠️ Draft - orchestration for battle logic, still uses old struct names
+cpu.rs             // ✅ Complete - branchless, cache-aware CPU execution
+gpu.rs             // ⚠️ Partial - GPU sniper logic, CUDA hooks stubbed
+mem.rs             // ⚠️ Draft - memory allocators, needs stress-testing
+mod.rs             // ✅ Complete - glues CPU/GPU/mem together, exports public API
+quartermaster.rs   // ❌ Missing - want this to be hardware pool manager
+rank.rs            // ✅ Complete - RuneScape-style hardware leveling
+scout.rs           // 📝 Stub - future: auto-discover hardware on boot
+supply.rs          // ⚠️ Draft - basic logic for tracking hardware resources, no metrics

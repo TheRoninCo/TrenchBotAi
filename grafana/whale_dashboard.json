@@ -1,0 +1,25 @@
+{
+    "title": "Whale Personality Monitor",
+    "panels": [
+      {
+        "title": "Personality Distribution",
+        "type": "pie",
+        "targets": [{
+          "expr": "sum(whale_classifications_total) by (personality)",
+          "legend": "{{personality}}"
+        }]
+      },
+      {
+        "title": "Personality Drift Alerts",
+        "type": "stat",
+        "targets": [{
+          "expr": "rate(whale_personality_changes_total[5m])",
+          "colorMode": "value",
+          "thresholds": { "mode": "absolute", "steps": [
+            { "color": "green", "value": null },
+            { "color": "red", "value": 1 }
+          ]}
+        }]
+      }
+    ]
+  }

@@ -1,0 +1,97 @@
+# TrenchBot Telegram Bot Configuration
+
+[telegram_bot]
+# Get your bot token from @BotFather on Telegram
+bot_token = "${TELEGRAM_BOT_TOKEN}"
+
+# Authorized Telegram user IDs (get from @userinfobot)
+authorized_users = [
+    # Add your Telegram user IDs here
+    # 123456789,
+    # 987654321,
+]
+
+# Bot settings
+bot_name = "TrenchBot MEV Alert"
+webhook_url = ""  # Leave empty for polling mode
+max_connections = 40
+allowed_updates = ["message", "callback_query"]
+
+[alerts]
+# MEV alert settings
+mev_enabled = true
+whale_enabled = true
+performance_enabled = true
+
+# Alert thresholds
+min_profit_usd = 10.0          # Minimum profit to alert ($)
+min_whale_tx_sol = 100.0       # Minimum whale transaction size (SOL)
+max_alerts_per_hour = 20       # Rate limiting
+
+# Alert priorities
+high_priority_profit = 100.0   # High priority alert threshold ($)
+urgent_profit = 500.0          # Urgent alert threshold ($)
+
+[wallet_management]
+# Temporary wallet settings
+max_temp_wallets = 10
+default_funding_amount = 10.0  # Default SOL amount
+max_funding_amount = 100.0     # Maximum SOL per funding
+auto_cleanup_hours = 24        # Auto-cleanup unused wallets
+
+# Funding settings
+require_confirmation = true
+funding_timeout_seconds = 300
+max_pending_requests = 5
+
+[monitoring]
+# Performance monitoring
+check_interval_seconds = 30
+alert_performance_degradation = true
+performance_threshold_ms = 1000  # Alert if latency > 1000ms
+
+# System health checks
+check_wallet_balances = true
+check_mev_opportunities = true
+check_whale_activity = true
+
+[dashboard_integration]
+# Dashboard URLs
+main_dashboard = "http://localhost:3000/dashboard"
+whale_dashboard = "http://localhost:3000/whales"
+performance_dashboard = "http://localhost:3000/performance"
+mev_dashboard = "http://localhost:3000/mev"
+
+# Grafana integration
+grafana_url = "http://localhost:3000"
+grafana_api_key = "${GRAFANA_API_KEY}"
+
+[security]
+# Security settings
+rate_limit_per_user = 30       # Max commands per minute per user
+session_timeout_hours = 24     # Auto-logout after inactivity
+log_all_commands = true        # Log all bot interactions
+encrypt_sensitive_data = true
+
+# Emergency settings
+emergency_stop_enabled = true
+emergency_contacts = []        # Additional user IDs for emergency alerts
+
+[notifications]
+# Notification types
+mev_opportunities = true
+whale_movements = true
+large_profits = true
+system_alerts = true
+performance_degradation = true
+emergency_stops = true
+
+# Notification timing
+quiet_hours_start = "23:00"    # No alerts during quiet hours
+quiet_hours_end = "07:00"
+timezone = "UTC"
+
+# Message formatting
+use_markdown = true
+include_charts = false         # Set to true when chart generation is implemented
+max_message_length = 4000

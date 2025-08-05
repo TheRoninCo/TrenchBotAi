@@ -1,0 +1,40 @@
+{
+  "timestamp": "2025-08-04T23:24:22.595352",
+  "baseline_ms": 55.0,
+  "optimizations": [
+    {
+      "test": "ultra_fast_quantum",
+      "data_points": 1000,
+      "coherence": 5.801818598150695e-06,
+      "time_ms": 1.476287841796875,
+      "optimization": "pre_calc_vectorized"
+    },
+    {
+      "test": "micro_quantum",
+      "data_points": 100,
+      "coherence": 2.922614827278073e-05,
+      "time_ms": 0.18477439880371094,
+      "optimization": "minimal_ops_micro"
+    },
+    {
+      "test": "lookup_table_quantum",
+      "data_points": 1000,
+      "lookup_size": 1000,
+      "coherence": 8.371909088410386e-07,
+      "time_ms": 1.4429092407226562,
+      "optimization": "precomputed_lookup"
+    },
+    {
+      "test": "approximation_quantum",
+      "data_points": 1000,
+      "sampling_step": 10,
+      "coherence": 4.028351701474817e-07,
+      "time_ms": 1.0728836059570312,
+      "optimization": "taylor_approximation"
+    }
+  ],
+  "best_optimization": "micro_quantum",
+  "best_speedup": 297.66028387096776,
+  "fastest_time_ms": 0.18477439880371094,
+  "total_test_time_ms": 5.368232727050781
+}

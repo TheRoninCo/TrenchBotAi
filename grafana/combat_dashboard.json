@@ -1,0 +1,28 @@
+{
+    "title": "TrenchBot Combat Dashboard",
+    "panels": [
+      {
+        "title": "Log Throughput",
+        "type": "graph",
+        "targets": [{
+          "expr": "rate(trenchbot_logs_processed_total[1m])",
+          "legend": "{{log_type}}"
+        }]
+      },
+      {
+        "title": "Detection Latency",
+        "type": "heatmap",
+        "targets": [{
+          "expr": "histogram_quantile(0.99, sum(rate(trenchbot_detection_latency_seconds_bucket[1m])) by (le, detector_type))",
+          "legend": "{{detector_type}}"
+        }]
+      },
+      {
+        "title": "Critical Failures",
+        "type": "stat",
+        "targets": [{
+          "expr": "sum(trenchbot_critical_failures_total) by (subsystem)"
+        }]
+      }
+    ]
+  }
