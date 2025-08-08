@@ -33,6 +33,9 @@ solana-transaction-status = "2.0"
 # --- APIs ---
 reqwest = { version = "0.11", features = ["json", "stream"] }
 tokio-tungstenite = "0.20"
+axum = { version = "0.7", features = ["ws"] }
+tower = { version = "0.4", features = ["full"] }
+tower-http = { version = "0.5", features = ["cors", "trace", "compression-br", "limit"] }
 
 # --- UI/Terminal ---
 crossterm = "0.27"
@@ -83,6 +86,9 @@ sysinfo = "0.30"
 log = "0.4"
 num_cpus = "1.16"
 
+# --- Optional AI/Hardware Acceleration Dependencies ---
+candle-core = { version = "0.3", optional = true }
+
 [lib]
 name = "trenchbot_dex"
 path = "src/lib.rs"
@@ -92,9 +98,10 @@ criterion = "0.5"
 rand = "0.8"
 
 [features]
-default = []
+default = ["core"]
+core = []  # Core trading functionality only
 monitoring = ["metrics-exporter-prometheus", "prometheus"]
-gpu = ["tch"]
+gpu = ["tch", "candle-core"]
 ai = ["tract-onnx", "tract-core"]
 wolfram = ["wolfram_wxf"]
 aws = ["aws-config", "aws-sdk-s3", "zstd"]
@@ -102,11 +109,22 @@ mongodb = ["dep:mongodb"]
 kafka = ["rdkafka"]
 redis = ["dep:redis"]
 spl-token = ["dep:spl-token"]
-cuda = []  # No effect unless you want to add GPU/AI later
+cuda = []
+training = ["gpu", "ai"]
+runpod-minimal = ["core", "monitoring"]  # Minimal RunPod deployment
+runpod = ["training", "monitoring"]  # Full RunPod deployment
+
+[[bin]]
+name = "trenchbot-dex"
+path = "src/main.rs"
 
 [[bin]]
 name = "standalone_test"
 path = "src/standalone_test.rs"
+
+[[bin]]
+name = "quick_test"
+path = "src/quick_test.rs"
 
 [profile.release]
 lto = true

@@ -875,7 +875,7 @@ impl CompetitiveTradingEngine {
 }
 
 #[derive(Debug)]
-struct TradingPattern {
+pub struct TradingPattern {
     recent_accumulation: f64,
     recent_distribution: f64,
     rotation_detected: bool,

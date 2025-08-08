@@ -13,6 +13,7 @@ pub mod war;
 pub mod ui;
 pub mod observability;
 pub mod training;
+pub mod flash_loans;
 
 /// Core configuration and error types
 #[derive(Debug, Serialize, Deserialize, Clone)]

@@ -8,7 +8,10 @@ use anyhow::Result;
 use std::time::Duration;
 
 pub struct KafkaSink {
+    #[cfg(feature = "kafka")]
     producer: FutureProducer,
+    #[cfg(not(feature = "kafka"))]
+    producer: (),
     topic: String,
 }
 
@@ -21,7 +24,7 @@ impl KafkaSink {
             .map_err(|e| anyhow::anyhow!("Failed to create Kafka producer: {:?}", e))?;
         
         #[cfg(not(feature = "kafka"))]
-        let producer = FutureProducer::default(); // This won't compile without feature, but we'll handle it
+        let producer = ();
         
         Ok(Self {
             producer,

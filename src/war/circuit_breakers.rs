@@ -8,8 +8,8 @@ use serde::{Deserialize, Serialize};
 use chrono::{DateTime, Utc, Duration};
 use std::collections::{HashMap, VecDeque};
 use std::sync::{Arc, atomic::{AtomicBool, AtomicU64, Ordering}};
-use tokio::sync::{RwLock, broadcast, mpsc};
-use tracing::{warn, error, info};
+use tracing::{info, warn, error};
+use tokio::sync::{RwLock, broadcast};
 
 /// Circuit breaker states following standard patterns
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -473,13 +473,8 @@ impl EmergencyManager {
             breaker.trip_manually(format!("Emergency shutdown: {}", reason)).await;
         }
 
-        // Trigger emergency event
-        self.trigger_emergency(
-            EmergencyEventType::ManualShutdown,
-            format!("Emergency shutdown: {}", reason),
-            "emergency_manager".to_string(),
-            EmergencySeverity::Critical,
-        ).await?;
+        // Log emergency event (avoid recursive call)
+        warn!("Emergency event logged: ManualShutdown - {}", reason);
 
         Ok(())
     }

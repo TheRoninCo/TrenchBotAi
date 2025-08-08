@@ -1,18 +1,18 @@
-// src/modules/shared/coordinator/redis.rs
 #[cfg(feature = "redis")]
-use redis::{Client, Commands};
+use redis::{Client as RedisClient, Commands};
 use serde_json::Value;
 use std::sync::Arc;
+use futures::Stream; // Added import for Stream
 
 pub struct RedisCoordinator {
-    client: Arc<Client>,
+    client: Arc<RedisClient>,
     channel: String,
 }
 
 impl RedisCoordinator {
     pub fn new(uri: &str, channel: &str) -> Self {
         Self {
-            client: Arc::new(Client::open(uri).unwrap()),
+            client: Arc::new(RedisClient::open(uri).unwrap()),
             channel: channel.to_string(),
         }
     }

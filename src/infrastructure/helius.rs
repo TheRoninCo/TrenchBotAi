@@ -46,7 +46,7 @@ impl HeliusClient {
         
         let request = HeliusRpcRequest {
             method: "getParsedTransactions".to_string(),
-            params: vec![signatures],
+            params: vec![signatures.into()], // Convert to serde_json::Value
             id: 1,
             jsonrpc: "2.0".to_string(),
         };
@@ -86,7 +86,7 @@ impl HeliusClient {
         
         let request = HeliusRpcRequest {
             method: "getParsedTransactionHistory".to_string(),
-            params: vec![params],
+            params: vec![params.into()], // Convert to serde_json::Value
             id: 1,
             jsonrpc: "2.0".to_string(),
         };
@@ -111,118 +111,57 @@ impl HeliusClient {
         Ok(transactions)
     }
     
-    /// **GET ASSET**
-    /// Get detailed asset information including metadata
-    pub async fn get_asset(&self, asset_id: &str) -> Result<AssetInfo> {
+    /// **GET SIGNATURES FOR ADDRESS**
+    /// Get transaction signatures for an address with advanced filtering
+    pub async fn get_signatures_for_address(&self, 
+                                           address: &str,
+                                           limit: Option<u32>,
+                                           before: Option<&str>,
+                                           until: Option<&str>) -> Result<Vec<TransactionSignature>> {
         self.rate_limiter.wait().await;
         
-        let url = format!("https://api.helius.xyz/v0/token-metadata?api-key={}", self.api_key);
-        let request = TokenMetadataRequest {
-            mint_accounts: vec![asset_id.to_string()],
-            include_off_chain: true,
-            disable_cache: false,
+        let mut params = vec![address.to_string()];
+        
+        // Build options object
+        let mut options = serde_json::Map::new();
+        if let Some(limit) = limit {
+            options.insert("limit".to_string(), serde_json::Value::Number(limit.into()));
+        }
+        if let Some(before) = before {
+            options.insert("before".to_string(), serde_json::Value::String(before.to_string()));
+        }
+        if let Some(until) = until {
+            options.insert("until".to_string(), serde_json::Value::String(until.to_string()));
+        }
+        
+        if !options.is_empty() {
+            params.push(serde_json::to_string(&options)?.into()); // Convert to serde_json::Value
+        }
+        
+        let request = HeliusRpcRequest {
+            method: "getSignaturesForAddress".to_string(),
+            params: vec![params.into()], // Convert to serde_json::Value
+            id: 1,
+            jsonrpc: "2.0".to_string(),
         };
         
+        let url = format!("{}?api-key={}", self.rpc_url, self.api_key);
         let response = self.client
             .post(&url)
             .json(&request)
             .send()
             .await?;
         
-        if !response.status().is_success() {
-            return Err(anyhow::anyhow!("Failed to get asset info: {}", response.status()));
+        let rpc_response: HeliusRpcResponse<Vec<TransactionSignature>> = response.json().await?;
+        
+        if let Some(error) = rpc_response.error {
+            return Err(anyhow::anyhow!("Failed to get signatures: {}", error.message));
         }
         
-        let metadata: Vec<TokenMetadata> = response.json().await?;
+        let signatures = rpc_response.result.unwrap_or_default();
+        info!("✍️  Retrieved {} transaction signatures for {}", signatures.len(), address);
         
-        if let Some(token_meta) = metadata.first() {
-            Ok(AssetInfo {
-                mint: token_meta.mint.clone(),
-                name: token_meta.on_chain_metadata.metadata.name.clone(),
-                symbol: token_meta.on_chain_metadata.metadata.symbol.clone(),
-                description: token_meta.off_chain_metadata.as_ref()
-                    .and_then(|m| m.description.clone()),
-                image: token_meta.off_chain_metadata.as_ref()
-                    .and_then(|m| m.image.clone()),
-                decimals: token_meta.on_chain_metadata.token_standard.as_ref()
-                    .map(|_| 9) // Default to 9 decimals for SPL tokens
-                    .unwrap_or(0),
-                supply: token_meta.on_chain_metadata.slot.unwrap_or(0),
-                is_mutable: token_meta.on_chain_metadata.mint_authority.is_some(),
-            })
-        } else {
-            Err(anyhow::anyhow!("Asset not found: {}", asset_id))
-        }
-    }
-    
-    /// **GET ASSETS BY OWNER**
-    /// Get all assets owned by a specific address
-    pub async fn get_assets_by_owner(&self, owner: &str) -> Result<Vec<AssetInfo>> {
-        self.rate_limiter.wait().await;
-        
-        let url = format!("https://api.helius.xyz/v0/token-metadata?api-key={}", self.api_key);
-        let request = AssetsByOwnerRequest {
-            owner_address: owner.to_string(),
-            page: 1,
-            limit: Some(1000),
-        };
-        
-        let response = self.client
-            .post(&url)
-            .json(&request)
-            .send()
-            .await?;
-        
-        let assets_response: AssetsByOwnerResponse = response.json().await?;
-        
-        info!("💰 Found {} assets for owner {}", assets_response.total, owner);
-        
-        Ok(assets_response.items.into_iter().map(|asset| AssetInfo {
-            mint: asset.id,
-            name: asset.content.metadata.name,
-            symbol: asset.content.metadata.symbol.unwrap_or_default(),
-            description: asset.content.metadata.description,
-            image: asset.content.files.first().map(|f| f.uri.clone()),
-            decimals: 9, // Default for SPL tokens
-            supply: 0,   // Would need additional call to get supply
-            is_mutable: true, // Conservative assumption
-        }).collect())
-    }
-    
-    /// **CREATE WEBHOOK**
-    /// Set up webhook for real-time transaction monitoring
-    pub async fn create_webhook(&self, 
-                              webhook_url: &str,
-                              transaction_types: Vec<String>,
-                              addresses: Vec<String>) -> Result<WebhookInfo> {
-        self.rate_limiter.wait().await;
-        
-        let request = CreateWebhookRequest {
-            webhook_url: webhook_url.to_string(),
-            transaction_types,
-            account_addresses: addresses,
-            webhook_type: "enhanced".to_string(),
-        };
-        
-        let url = format!("{}?api-key={}", self.webhook_url, self.api_key);
-        let response = self.client
-            .post(&url)
-            .json(&request)
-            .send()
-            .await?;
-        
-        if !response.status().is_success() {
-            return Err(anyhow::anyhow!("Failed to create webhook: {}", response.status()));
-        }
-        
-        let webhook: WebhookInfo = response.json().await?;
-        
-        info!("🎣 Created webhook: {}", webhook.webhook_id);
-        info!("  📡 URL: {}", webhook.webhook_url);
-        info!("  📊 Types: {:?}", webhook.transaction_types);
-        info!("  🏠 Addresses: {}", webhook.account_addresses.len());
-        
-        Ok(webhook)
+        Ok(signatures)
     }
     
     /// **GET TRANSACTION SIGNATURES**

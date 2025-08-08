@@ -1,5 +1,22 @@
 //! Alpha wallet detection and tracking system
 use anyhow::Result;
+use serde::{Deserialize, Serialize};
+// use crate::models::AlphaWallet; // Importing AlphaWallet type
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AlphaWallet {
+    pub address: String,
+    pub win_rate: f64,
+    pub total_trades: u32,
+    pub total_profit: f64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TradingPattern {
+    pub pattern_type: String,
+    pub confidence: f64,
+    pub frequency: f64,
+}
 
 pub struct AlphaWalletDetector {
     pub success_threshold: f64,     // Minimum 70% win rate

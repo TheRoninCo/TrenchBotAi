@@ -107,7 +107,7 @@ impl BundleAnalyzer {
 
     fn extract_compute_units(&self, tx: &Transaction) -> (u32, u32) {
         let mut cu_limit = 200_000; // Default
-        let mut cu_price = 0;
+        let mut cu_price = 0u32; // Initialize as u32
 
         for ix in &tx.message.instructions {
             if let Ok(budget_ix) = solana_sdk::compute_budget::ComputeBudgetInstruction::try_from(ix) {
@@ -129,7 +129,7 @@ impl BundleAnalyzer {
     fn extract_tip(&self, tx: &Transaction) -> u64 {
         tx.message.instructions.iter()
             .find(|ix| ix.program_id == solana_sdk::system_program::id())
-            .and_then(|ix| ix.data.get(0..8).map(|d| u64::from_le_bytes(d.try_into().unwrap())))
+            .and_then(|ix| ix.data.get(0..8).map(|d| u64::from_le_bytes(d.try_into().unwrap_or_default()))) // Use unwrap_or_default
             .unwrap_or(0)
     }
 

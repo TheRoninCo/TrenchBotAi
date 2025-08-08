@@ -8,6 +8,7 @@ use chrono::{Utc, Duration};
 
 // Import TrenchBot modules  
 use trenchbot_dex::analytics::{SimpleRugPullDetector, Transaction, TransactionType};
+use trenchbot_dex::api::server::{TrenchBotServer, ServerConfig};
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -18,8 +19,45 @@ async fn main() -> Result<()> {
 
     info!("🚀 Starting TrenchBot MEV System");
     
+    // Parse command line arguments
+    let args: Vec<String> = env::args().collect();
+    
+    if args.iter().any(|arg| arg == "--help") {
+        println!("TrenchBotAI - Ultra-low latency MEV trading system");
+        println!("Usage: {} [OPTIONS]", args[0]);
+        println!("Options:");
+        println!("  --help              Show this help message");
+        println!("  --mode=training     Run in training mode");
+        println!("  --gpu=true          Enable GPU acceleration");
+        println!("  --runpod=true       Enable RunPod optimizations");
+        println!("  --rug-pull-demo     Run rug pull detection demo");
+        return Ok(());
+    }
+    
+    // Check modes
+    let training_mode = args.iter().any(|arg| arg.starts_with("--mode=training"));
+    let gpu_enabled = args.iter().any(|arg| arg.starts_with("--gpu=true"));
+    let runpod_mode = args.iter().any(|arg| arg.starts_with("--runpod=true"));
+    
+    if training_mode {
+        info!("🧠 Training mode enabled");
+    }
+    if gpu_enabled {
+        info!("🚀 GPU acceleration enabled");
+    }
+    if runpod_mode {
+        info!("☁️ RunPod optimizations enabled");
+        // Load RunPod environment
+        if let Ok(helius_key) = env::var("HELIUS_API_KEY") {
+            info!("✅ Helius API key loaded: {}...{}", &helius_key[..8], &helius_key[helius_key.len()-4..]);
+        }
+        if let Ok(_solscan_key) = env::var("SOLSCAN_API_KEY") {
+            info!("✅ Solscan API key loaded");
+        }
+    }
+    
     // Check if we should run rug pull detection example
-    if env::args().any(|arg| arg == "--rug-pull-demo") {
+    if args.iter().any(|arg| arg == "--rug-pull-demo") {
         info!("🔍 Running Rug Pull Detection Demo");
         run_rug_pull_demo().await?;
         return Ok(());
@@ -29,9 +67,30 @@ async fn main() -> Result<()> {
     info!("⚡ TrenchBot MEV System initialized successfully");
     info!("   Use --rug-pull-demo to test the rug pull detection system");
     
+    // Start API server on port 8080 for RunPod compatibility
+    info!("🌐 Starting API server on http://0.0.0.0:8080");
+    let api_handle = tokio::spawn(async move {
+        let config = ServerConfig {
+            host: "0.0.0.0".to_string(),
+            port: 8080,
+        };
+        let server = TrenchBotServer::new(config).await?;
+        server.start("0.0.0.0:8080").await
+    });
+    
     // Keep the application running
-    tokio::signal::ctrl_c().await?;
-    info!("🛑 Shutting down TrenchBot");
+    tokio::select! {
+        _ = tokio::signal::ctrl_c() => {
+            info!("🛑 Shutting down TrenchBot");
+        }
+        result = api_handle => {
+            match result {
+                Ok(Ok(_)) => info!("API server completed successfully"),
+                Ok(Err(e)) => info!("API server error: {}", e),
+                Err(e) => info!("API server task error: {}", e),
+            }
+        }
+    }
     
     Ok(())
 }

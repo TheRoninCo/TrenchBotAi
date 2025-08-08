@@ -1,0 +1,385 @@
+{
+  "name": "TrenchBotAI A100 SXM Training Template",
+  "version": "1.0.0",
+  "description": "Ultra-low latency AI trading system for Solana with quantum-inspired algorithms",
+  "category": "AI/ML Training",
+  "docker": {
+    "image": "rayarroyo/trenchbot-ai:latest",
+    "build": {
+      "dockerfile": "Dockerfile.runpod",
+      "context": ".",
+      "args": {
+        "CUDA_VERSION": "12.1",
+        "PYTORCH_VERSION": "2.1.0",
+        "RUST_VERSION": "1.75.0"
+      }
+    }
+  },
+  "hardware": {
+    "gpu": {
+      "type": "A100_SXM",
+      "vram": "80GB",
+      "count": 1,
+      "architecture": "Ampere",
+      "compute_capability": "8.0"
+    },
+    "cpu": {
+      "cores": 16,
+      "memory": "117GB"
+    },
+    "storage": {
+      "disk_size": "80GB",
+      "type": "NVMe",
+      "encrypted": false
+    }
+  },
+  "environment": {
+    "cuda": {
+      "version": "12.1",
+      "runtime": "nvidia/cuda:12.1-devel-ubuntu22.04"
+    },
+    "python": {
+      "version": "3.10",
+      "packages": [
+        "torch==2.1.0+cu121",
+        "transformers>=4.30.0",
+        "accelerate>=0.20.0",
+        "datasets>=2.12.0",
+        "wandb>=0.15.0",
+        "numpy>=1.24.0",
+        "pandas>=2.0.0",
+        "scikit-learn>=1.3.0",
+        "matplotlib>=3.7.0",
+        "seaborn>=0.12.0",
+        "jupyter>=1.0.0",
+        "jupyterlab>=4.0.0"
+      ]
+    },
+    "rust": {
+      "version": "1.75.0",
+      "toolchain": "stable",
+      "components": ["clippy", "rustfmt"],
+      "targets": ["x86_64-unknown-linux-gnu"]
+    },
+    "system_packages": [
+      "build-essential",
+      "curl",
+      "git",
+      "htop",
+      "tmux",
+      "vim",
+      "wget",
+      "unzip",
+      "pkg-config",
+      "libssl-dev",
+      "cmake",
+      "llvm-dev",
+      "libclang-dev"
+    ]
+  },
+  "ports": [
+    {
+      "internal": 8080,
+      "external": 8080,
+      "protocol": "http",
+      "description": "TrenchBot API Server"
+    },
+    {
+      "internal": 8888,
+      "external": 8888,
+      "protocol": "http",
+      "description": "Jupyter Lab"
+    },
+    {
+      "internal": 6006,
+      "external": 6006,
+      "protocol": "http",
+      "description": "TensorBoard"
+    },
+    {
+      "internal": 3000,
+      "external": 3000,
+      "protocol": "http",
+      "description": "Web Dashboard"
+    }
+  ],
+  "volumes": [
+    {
+      "name": "model_cache",
+      "mount_path": "/workspace/models",
+      "size": "20GB",
+      "type": "persistent"
+    },
+    {
+      "name": "training_data",
+      "mount_path": "/workspace/data",
+      "size": "30GB", 
+      "type": "persistent"
+    },
+    {
+      "name": "logs",
+      "mount_path": "/workspace/logs",
+      "size": "10GB",
+      "type": "persistent"
+    }
+  ],
+  "secrets": {
+    "required": [
+      "HELIUS_API_KEY",
+      "SOLSCAN_API_KEY",
+      "WANDB_API_KEY"
+    ],
+    "optional": [
+      "TELEGRAM_BOT_TOKEN",
+      "DISCORD_WEBHOOK_URL",
+      "SLACK_WEBHOOK_URL"
+    ]
+  },
+  "startup_commands": [
+    "export CUDA_VISIBLE_DEVICES=0",
+    "export TORCH_CUDA_ARCH_LIST=\"8.0\"",
+    "export CUDA_HOME=/usr/local/cuda-12.1",
+    "export PATH=$CUDA_HOME/bin:$PATH",
+    "export LD_LIBRARY_PATH=$CUDA_HOME/lib64:$LD_LIBRARY_PATH",
+    "cd /workspace",
+    "chmod +x scripts/setup_runpod.sh",
+    "./scripts/setup_runpod.sh",
+    "source ~/.cargo/env",
+    "cargo build --release --features gpu,training,runpod",
+    "./scripts/start_services.sh"
+  ],
+  "configuration": {
+    "training": {
+      "batch_size": 64,
+      "learning_rate": 0.0001,
+      "epochs": 100,
+      "precision": "fp16",
+      "gradient_accumulation_steps": 4,
+      "warmup_steps": 1000,
+      "save_steps": 5000,
+      "eval_steps": 1000,
+      "logging_steps": 100,
+      "max_sequence_length": 512,
+      "dataloader_num_workers": 8,
+      "pin_memory": true,
+      "use_flash_attention": true
+    },
+    "optimization": {
+      "optimizer": "AdamW",
+      "weight_decay": 0.01,
+      "beta1": 0.9,
+      "beta2": 0.999,
+      "eps": 1e-8,
+      "scheduler": "cosine_with_restarts",
+      "num_cycles": 3
+    },
+    "model": {
+      "architecture": "transformer",
+      "hidden_size": 1024,
+      "num_attention_heads": 16,
+      "num_hidden_layers": 24,
+      "intermediate_size": 4096,
+      "dropout": 0.1,
+      "attention_dropout": 0.1
+    },
+    "deployment": {
+      "inference_mode": "fp16",
+      "max_concurrent_requests": 100,
+      "timeout_seconds": 30,
+      "cache_size": "2GB",
+      "enable_telemetry": true
+    }
+  },
+  "monitoring": {
+    "gpu_utilization": true,
+    "memory_usage": true,
+    "temperature": true,
+    "power_consumption": true,
+    "training_metrics": [
+      "loss",
+      "accuracy",
+      "f1_score",
+      "precision",
+      "recall",
+      "perplexity"
+    ],
+    "system_metrics": [
+      "cpu_usage",
+      "ram_usage",
+      "disk_io",
+      "network_io"
+    ]
+  },
+  "health_checks": [
+    {
+      "name": "GPU Health",
+      "command": "nvidia-smi",
+      "interval": 30,
+      "timeout": 10,
+      "retries": 3
+    },
+    {
+      "name": "Training Process",
+      "command": "pgrep -f trenchbot-dex",
+      "interval": 60,
+      "timeout": 5,
+      "retries": 2
+    },
+    {
+      "name": "API Endpoint",
+      "url": "http://localhost:8080/health",
+      "interval": 30,
+      "timeout": 10,
+      "retries": 3
+    }
+  ],
+  "auto_scaling": {
+    "enabled": true,
+    "min_instances": 1,
+    "max_instances": 3,
+    "scale_up_threshold": {
+      "gpu_utilization": 85,
+      "memory_usage": 80
+    },
+    "scale_down_threshold": {
+      "gpu_utilization": 30,
+      "memory_usage": 40
+    },
+    "cooldown_period": 300
+  },
+  "backup": {
+    "enabled": true,
+    "frequency": "daily",
+    "retention_days": 7,
+    "backup_paths": [
+      "/workspace/models",
+      "/workspace/logs",
+      "/workspace/checkpoints"
+    ],
+    "compression": "gzip"
+  },
+  "security": {
+    "firewall": {
+      "enabled": true,
+      "allowed_ips": [],
+      "blocked_ips": []
+    },
+    "ssl": {
+      "enabled": true,
+      "auto_cert": true
+    },
+    "authentication": {
+      "api_key_required": true,
+      "rate_limiting": {
+        "requests_per_minute": 1000,
+        "burst_size": 100
+      }
+    }
+  },
+  "logging": {
+    "level": "INFO",
+    "format": "json",
+    "rotation": "daily",
+    "max_size": "100MB",
+    "retention_days": 14,
+    "destinations": [
+      "file",
+      "stdout",
+      "syslog"
+    ]
+  },
+  "cost_optimization": {
+    "auto_pause": {
+      "enabled": true,
+      "idle_time_minutes": 30,
+      "exclude_training": true
+    },
+    "spot_instances": {
+      "enabled": false,
+      "max_price": 2.50
+    },
+    "preemptible": {
+      "enabled": true,
+      "grace_period_seconds": 120
+    }
+  },
+  "integration": {
+    "solana": {
+      "network": "mainnet-beta",
+      "rpc_endpoints": [
+        "https://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}",
+        "https://api.mainnet-beta.solana.com"
+      ],
+      "websocket_endpoints": [
+        "wss://mainnet.helius-rpc.com/?api-key=${HELIUS_API_KEY}"
+      ],
+      "commitment": "confirmed",
+      "timeout": 30000
+    },
+    "jito": {
+      "tip_accounts": [
+        "4ACfpUFoaSD9bfPdeu6DBt89gB6ENTeHBXCAi87NhDEE",
+        "D2L6yPZ2FmmmTKPgzaMKdhu6EWZcTpLy1Vhx8uvZe7NZ",
+        "9bnz4RShgq1hAnLnZbP8kbgBg1kEmcJBYQq3gQbmnSta",
+        "5VY91ws6B2hMmBFRsXkoAAdsPHBJwRfBht4DXox3xkwn",
+        "2nyhqdwKcJZR2vcqCyrYsaPVdAnFoJjiksCXJ7hfEYgD",
+        "2q5pghRs6arqVjRvT5gfgWfWcHWmw1ZuCzphgd5KfWGJ",
+        "wyvPkWjVZz1M8fHQnMMCDTQDbkManefNNhweYk5WkcF",
+        "3KCKozbAaF75qEU33jtzozcJ29yJuaLJTy2jFdzUY8bT",
+        "4vieeGHPYPG2MmyPRcYjdiDmmhN3ww7hsFNap8pVN3Ey",
+        "4TQLFNWK8AovT1gFvda5jfw2oJeRMKEmw7aH6MGBJ3or"
+      ],
+      "bundle_endpoint": "https://mainnet.block-engine.jito.wtf/api/v1/bundles",
+      "max_tip_lamports": 100000
+    },
+    "apis": {
+      "helius": {
+        "base_url": "https://api.helius.xyz",
+        "api_key": "${HELIUS_API_KEY}",
+        "rate_limit": 1000,
+        "timeout": 10000
+      },
+      "solscan": {
+        "base_url": "https://pro-api.solscan.io",
+        "api_key": "${SOLSCAN_API_KEY}",
+        "rate_limit": 500,
+        "timeout": 5000
+      },
+      "jupiter": {
+        "base_url": "https://lite-api.jup.ag",
+        "rate_limit": 100,
+        "timeout": 3000
+      }
+    }
+  },
+  "performance": {
+    "target_latency": {
+      "processing": "100μs",
+      "streaming": "50μs",
+      "decision_making": "25μs"
+    },
+    "throughput": {
+      "transactions_per_second": 10000,
+      "concurrent_streams": 1000,
+      "batch_size": 128
+    },
+    "optimization": {
+      "cpu_affinity": true,
+      "numa_binding": true,
+      "huge_pages": true,
+      "zero_copy": true,
+      "async_io": true
+    }
+  },
+  "testing": {
+    "unit_tests": true,
+    "integration_tests": true,
+    "performance_tests": true,
+    "stress_tests": true,
+    "devnet_testing": {
+      "enabled": true,
+      "faucet_url": "https://faucet.solana.com",
+      "initial_sol": 10.0
+    }
+  }
+}

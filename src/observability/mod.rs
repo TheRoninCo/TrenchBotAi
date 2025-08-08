@@ -30,6 +30,21 @@ pub enum LogError {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+pub enum LogSeverity {
+    Debug,
+    Info,
+    Warn,
+    Error,
+    Critical,
+}
+
+#[derive(Debug, Clone)]
+pub struct OmniLogger {
+    pub name: String,
+    pub severity: LogSeverity,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LogQuery {
     pub start_time: Option<chrono::DateTime<chrono::Utc>>,
     pub end_time: Option<chrono::DateTime<chrono::Utc>>,
@@ -67,18 +82,6 @@ impl Default for ObservabilityConfig {
     }
 }
 
-#[derive(Debug, Clone)]
-pub enum LogSeverity {
-    Debug,
-    Info,
-    Warning,
-    Error,
-    Critical,
-}
-
-pub struct OmniLogger {
-    pub enabled: bool,
-}
 
 impl OmniLogger {
     pub fn new() -> Self {

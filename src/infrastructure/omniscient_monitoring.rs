@@ -7,6 +7,11 @@ use tokio::sync::{RwLock, Mutex, broadcast, mpsc};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 use tracing::{info, warn, error, debug, trace};
 
+// Missing type stubs for compilation
+#[derive(Debug)] pub struct ConsciousnessStreamAnalyzer;
+#[derive(Debug)] pub struct RealityFabricMonitor;  
+#[derive(Debug)] pub struct CausalChainMonitor;
+
 /// **OMNISCIENT MONITORING SYSTEM**
 /// All-seeing, all-knowing monitoring that transcends space, time, and reality
 #[derive(Debug)]

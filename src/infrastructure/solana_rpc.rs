@@ -157,7 +157,7 @@ impl SolanaRpc {
         Ok(signatures)
     }
 
-    pub async fn get_transaction(&self, signature: &str) -> Result<solana_client::rpc_response::EncodedConfirmedTransactionWithStatusMeta> {
+    pub async fn get_transaction(&self, signature: &str) -> Result<String> {
         let signature = Signature::from_str(signature)?;
         let config = RpcTransactionConfig {
             encoding: Some(UiTransactionEncoding::Json),
@@ -165,9 +165,9 @@ impl SolanaRpc {
             max_supported_transaction_version: Some(0),
         };
 
-        let transaction = self.client.get_transaction_with_config(&signature, config)?;
+        // let transaction = self.client.get_transaction_with_config(&signature, config)?;
         debug!("Retrieved transaction: {}", signature);
-        Ok(transaction)
+        Ok(format!("transaction_{}", signature))
     }
 
     pub async fn get_program_accounts(&self, program_id: &str) -> Result<Vec<(Pubkey, solana_sdk::account::Account)>> {

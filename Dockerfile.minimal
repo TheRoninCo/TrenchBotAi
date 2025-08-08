@@ -1,0 +1,47 @@
+# TrenchBot AI - Minimal RunPod Deployment
+FROM nvidia/cuda:12.1-devel-ubuntu22.04
+
+# Set environment variables
+ENV DEBIAN_FRONTEND=noninteractive
+ENV RUST_BACKTRACE=1
+ENV RUST_LOG=info
+ENV PORT=8080
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    build-essential \
+    pkg-config \
+    libssl-dev \
+    ca-certificates \
+    git \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Rust
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+# Set working directory
+WORKDIR /app
+
+# Copy source code
+COPY Cargo.toml Cargo.lock ./
+COPY src/ ./src/
+COPY benches/ ./benches/ 2>/dev/null || true
+COPY examples/ ./examples/ 2>/dev/null || true
+
+# Create a minimal main.rs for this deployment
+COPY src/main_minimal.rs ./src/main.rs
+
+# Build only the core features to avoid problematic quantum modules
+RUN cargo build --release --no-default-features --features runpod-minimal
+
+# Expose port
+EXPOSE 8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8080/ || exit 1
+
+# Run the application
+CMD ["./target/release/trenchbot-dex"]

@@ -4,6 +4,7 @@ use super::{
     types::{MevScore, MevType},
     BundleFeatures, RpcSimulateTransactionResult,
 };
+use crate::flash_loans::{FlashLoanCoordinator, FlashLoanConfig};
 use lazy_static::lazy_static;
 #[cfg(feature = "monitoring")]
 use prometheus::{IntCounterVec, register_int_counter_vec};
@@ -44,6 +45,7 @@ impl DetectorPipeline {
             detectors: vec![
                 Arc::new(SandwichDetector::new(&config.detection.sandwich)),
                 Arc::new(StatisticalDetector::new(&config.detection.statistical)),
+                Arc::new(FlashLoanDetector::new()),
             ],
             fallback: Arc::new(StatisticalDetector::new(&config.detection.statistical)),
             config: config.detection.clone(),
@@ -99,9 +101,8 @@ impl MevDetector for SandwichDetector {
             Some(MevScore {
                 ty: MevType::Sandwich,
                 confidence: 0.8,
-                expected_profit: 1000.0,
-                max_loss: 100.0,
-                gas_premium: 0.1,
+                risk: 0.1,              // Risk level (10%)
+                expected_profit: 1000,  // u64 in lamports
             })
         } else {
             None
@@ -132,9 +133,70 @@ impl MevDetector for StatisticalDetector {
         Some(MevScore {
             ty: MevType::Unknown,
             confidence: 0.3,
-            expected_profit: 10.0,
-            max_loss: 5.0,
-            gas_premium: 0.01,
+            risk: 0.7,             // Higher risk for unknown MEV
+            expected_profit: 10,   // u64 in lamports
         })
+    }
+}
+
+pub struct FlashLoanDetector {
+    // Flash loan coordinator would be initialized here in real implementation
+}
+
+impl FlashLoanDetector {
+    pub fn new() -> Self {
+        Self {}
+    }
+    
+    /// Detect flash loan MEV opportunities
+    fn detect_flash_loan_opportunity(&self, txs: &[Transaction]) -> Option<MevScore> {
+        // Look for transactions with flash loan patterns:
+        // 1. Borrow instruction
+        // 2. Arbitrage/liquidation operations  
+        // 3. Repay instruction
+        
+        for tx in txs {
+            // Analyze instruction patterns
+            let instructions = &tx.message.instructions;
+            
+            // Flash loan typically has 3+ instructions: borrow, operations, repay
+            if instructions.len() >= 3 {
+                // Check for Solend or Mango program IDs in instructions
+                let has_flash_loan_program = instructions.iter().any(|ix| {
+                    let program_id = tx.message.account_keys.get(ix.program_id_index as usize);
+                    if let Some(program_id) = program_id {
+                        // Solend program ID: So1endDq2YkqhipRh3WViPa8hdiSpxWy6z3Z6tMCpAo
+                        // Mango program ID: 4MangoMjqJ2firMokCjjGgoK8d4MXcrgL7XJaL3w6fVg
+                        program_id.to_string().contains("So1endDq2YkqhipRh3WViPa8hdiSpxWy6z3Z6tMCpAo") ||
+                        program_id.to_string().contains("4MangoMjqJ2firMokCjjGgoK8d4MXcrgL7XJaL3w6fVg")
+                    } else {
+                        false
+                    }
+                });
+                
+                if has_flash_loan_program {
+                    info!("🔍 Flash loan MEV opportunity detected");
+                    return Some(MevScore {
+                        ty: MevType::Liquidation, // Flash loans often used for liquidations
+                        confidence: 0.85,
+                        risk: 0.15,
+                        expected_profit: 500_000_000, // 0.5 SOL in lamports
+                    });
+                }
+            }
+        }
+        
+        None
+    }
+}
+
+impl MevDetector for FlashLoanDetector {
+    fn detect(
+        &self,
+        txs: &[Transaction],
+        sim: &RpcSimulateTransactionResult,
+        features: &BundleFeatures,
+    ) -> Option<MevScore> {
+        self.detect_flash_loan_opportunity(txs)
     }
 }

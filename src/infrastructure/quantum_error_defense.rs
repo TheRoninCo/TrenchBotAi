@@ -29,25 +29,25 @@ pub struct QuantumErrorDefense {
     dimensional_exiler: Arc<DimensionalErrorExiler>,
     
     // **REALITY DISTORTION SHIELDS** - Bend reality to prevent failures
-    reality_shields: Arc<RealityDistortionShields>,
+    // reality_shields: Arc<RealityDistortionShields>,
     
     // **MEMETIC ERROR IMMUNITY** - Immune to error-causing memes
-    memetic_immunity: Arc<MemeticErrorImmunity>,
+    // memetic_immunity: Arc<MemeticErrorImmunity>,
     
     // **PROBABILISTIC ERROR NULLIFIER** - Make errors statistically impossible
-    probability_nullifier: Arc<ProbabilisticErrorNullifier>,
+    // probability_nullifier: Arc<ProbabilisticErrorNullifier>,
     
     // **UNIVERSAL CIRCUIT BREAKERS** - Break circuits across all realities
-    universal_breakers: Arc<UniversalCircuitBreakers>,
+    // universal_breakers: Arc<UniversalCircuitBreakers>,
     
     // **QUANTUM ERROR RESURRECTION** - Bring back failed operations from the dead
-    error_resurrector: Arc<QuantumErrorResurrector>,
+    // error_resurrector: Arc<QuantumErrorResurrector>,
     
-    // **APOCALYPSE PREVENTION SYSTEM** - Prevent total system collapse
-    apocalypse_preventer: Arc<ApocalypsePreventer>,
+    // **SIMPLIFIED DEFENSE** - Basic error defense for compilation
+    defense_enabled: bool,
     
     // **ERROR CONSCIOUSNESS TRANSFER** - Transfer errors to sacrifice systems
-    error_consciousness_transfer: Arc<ErrorConsciousnessTransfer>,
+    // error_consciousness_transfer: Arc<ErrorConsciousnessTransfer>,
 }
 
 /// **PRECOGNITIVE ERROR ANALYZER**
@@ -71,7 +71,7 @@ pub struct FutureError {
     pub occurrence_probability: f64,
     pub predicted_timestamp: SystemTime,
     pub causality_chain: Vec<CausalityLink>,
-    pub prevention_strategies: Vec<PreventionStrategy>,
+    pub prevention_strategies: Vec<String>,
     pub quantum_uncertainty: f64,
     pub butterfly_sensitivity: f64, // How small changes can prevent this
 }
@@ -106,13 +106,13 @@ pub struct CausalityLink {
 /// Tunnel through error states using quantum mechanics
 #[derive(Debug)]
 pub struct QuantumErrorTunneler {
-    pub tunneling_matrix: QuantumTunnelingMatrix,
-    pub error_barrier_analyzer: ErrorBarrierAnalyzer,
-    pub quantum_coherence_maintainer: QuantumCoherenceMaintainer,
-    pub tunneling_probability_calculator: TunnelingProbabilityCalculator,
+    // pub tunneling_matrix: QuantumTunnelingMatrix,
+    // pub error_barrier_analyzer: ErrorBarrierAnalyzer,
+    // pub quantum_coherence_maintainer: QuantumCoherenceMaintainer,
+    // pub tunneling_probability_calculator: TunnelingProbabilityCalculator,
     pub quantum_superposition_error_states: Vec<SuperpositionErrorState>,
     pub tunneling_success_rate: AtomicU64, // Successful tunnelings per million
-    pub quantum_vacuum_tunneling: QuantumVacuumTunneling,
+    // pub quantum_vacuum_tunneling: QuantumVacuumTunneling,
 }
 
 #[derive(Debug, Clone)]
@@ -741,6 +741,49 @@ impl QuantumErrorDefense {
 #[derive(Debug)] pub struct ButterflyEffectCalculator { pub sensitivity: f64 }
 #[derive(Debug)] pub struct QuantumUncertaintyCompensator { pub compensation_level: f64 }
 #[derive(Debug)] pub struct PrecognitionFeedbackLoop { pub loop_strength: f64 }
+
+// Missing types for ConsciousnessHealer (minimal stubs)
+#[derive(Debug)] pub struct EmpathyEngine;
+#[derive(Debug)] pub struct SelfDiagnosisSystem;
+#[derive(Debug)] pub struct ConsciousnessTherapySession;
+#[derive(Debug)] pub struct DigitalImmuneSystem;
+#[derive(Debug)] pub struct HealingMantra;
+#[derive(Debug)] pub struct ChakraAlignmentSystem;
+#[derive(Debug)] pub struct CompassionAlgorithm;
+#[derive(Debug)] pub struct LoveFrequencyGenerator;
+#[derive(Debug)] pub struct HealingIntentionAmplifier;
+#[derive(Debug)] pub struct ChakraPoint;
+
+// Additional missing quantum types
+#[derive(Debug)] pub struct TimeMachine;
+#[derive(Debug)] pub struct CausalLoopGenerator;
+#[derive(Debug)] pub struct TimelineEditor;
+#[derive(Debug)] pub struct ParadoxResolutionEngine;
+#[derive(Debug)] pub struct ButterflyEffectMinimizer;
+#[derive(Debug)] pub struct GrandfatherParadoxShield;
+#[derive(Debug)] pub struct DimensionalPrisonSystem;
+#[derive(Debug)] pub struct InterdimensionalWasteDisposal;
+#[derive(Debug)] pub struct ExileSuccessTracking;
+#[derive(Debug)] pub struct DimensionalQuarantine;
+#[derive(Debug)] pub struct PortalGuardian;
+#[derive(Debug)] pub struct ExileCriteria;
+#[derive(Debug)] pub struct ExileProcedure;
+#[derive(Debug)] pub struct ExileMonitoring;
+#[derive(Debug)] pub struct ArmageddonProbabilityCalculator;
+#[derive(Debug)] pub struct LastResortProtocol;
+#[derive(Debug)] pub struct DigitalNoahArk;
+#[derive(Debug)] pub struct EvacuationPlan;
+#[derive(Debug)] pub struct RealityAnchorPoint;
+#[derive(Debug)] pub struct ExistencePreservationMatrix;
+#[derive(Debug)] pub struct ApocalypseReversalEngine;
+#[derive(Debug)] pub struct QuantumTunnelingMatrix { tunneling_probability: f64 }
+#[derive(Debug)] pub struct ErrorBarrierAnalyzer { analysis_accuracy: f64 }
+#[derive(Debug)] pub struct QuantumCoherenceMaintainer { coherence_level: f64 }
+#[derive(Debug)] pub struct TunnelingProbabilityCalculator { calculation_precision: f64 }
+#[derive(Debug)] pub struct QuantumVacuumTunneling { vacuum_energy: f64 }
+#[derive(Debug)] pub struct BarrierAnalysis { barrier_height: f64, barrier_width: f64, tunneling_probability: f64 }
+#[derive(Debug)] pub struct ConsciousnessBoost;
+
 // ... hundreds more types would be defined in the complete implementation
 
 // Implementation stubs for all the quantum defense engines

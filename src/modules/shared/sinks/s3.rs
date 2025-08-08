@@ -16,21 +16,32 @@ pub struct S3Config {
 
 #[derive(Debug)]
 pub struct S3Sink {
+    #[cfg(feature = "aws")]
     client: S3Client,
+    #[cfg(not(feature = "aws"))]
+    client: (),
     bucket: String,
 }
 
 impl S3Sink {
     pub async fn new(cfg: &S3Config) -> Result<Self> {
-        let config = aws_config::load_from_env().await;
-        let client = if let Some(r) = &cfg.region {
-            let mut builder = aws_sdk_s3::config::Builder::from(&config);
-            builder.region(r.parse().map_err(|e| anyhow::anyhow!("Invalid region: {:?}", e))?);
-            S3Client::from_conf(builder.build())
-        } else {
-            S3Client::new(&config)
-        };
-        Ok(Self { client, bucket: cfg.bucket.clone() })
+        #[cfg(feature = "aws")]
+        {
+            let config = aws_config::load_from_env().await;
+            let client = if let Some(r) = &cfg.region {
+                let mut builder = aws_sdk_s3::config::Builder::from(&config);
+                builder.region(r.parse().map_err(|e| anyhow::anyhow!("Invalid region: {:?}", e))?);
+                S3Client::from_conf(builder.build())
+            } else {
+                S3Client::new(&config)
+            };
+            Ok(Self { client, bucket: cfg.bucket.clone() })
+        }
+        
+        #[cfg(not(feature = "aws"))]
+        {
+            Ok(Self { client: (), bucket: cfg.bucket.clone() })
+        }
     }
 }
 
@@ -47,6 +58,8 @@ impl LogSink for S3Sink {
         self.client.put_object()
             .bucket(&self.bucket)
             .key(key)
+            .body(body.into())
+            .send()
             .await
             .map_err(|e| anyhow::anyhow!("Failed to write to S3: {:?}", e))?;
         

@@ -1,6 +1,6 @@
 use crate::ui::boot::{animation, healthcheck, metadata, matrix};
 use crossterm::ExecutableCommand;
-use std::io::{stdout, Write};
+// Removed unused import
 
 /// Boot styles available
 pub enum BootStyle {

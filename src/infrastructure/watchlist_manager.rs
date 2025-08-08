@@ -6,7 +6,27 @@ use tokio::sync::RwLock;
 use std::time::{Duration, Instant, SystemTime};
 use tracing::{info, warn, error, debug};
 
-use crate::analytics::contract_analyzer::{ContractAnalyzer, WalletCategory};
+// use crate::analytics::contract_analyzer::{ContractAnalyzer, WalletCategory};
+
+// Temporary wallet category enum
+#[derive(Debug, Clone)]
+pub enum WalletCategory {
+    Whale,
+    Scammer,
+    Insider,
+    Bot,
+    VIP,
+    Suspicious,
+}
+
+// Temporary scam type enum  
+#[derive(Debug, Clone)]
+pub enum ScamType {
+    RugPull,
+    Honeypot,
+    Pump,
+    Fake,
+}
 
 /// **ADVANCED WATCHLIST MANAGER**
 /// Manages and tracks multiple watchlists with intelligent categorization

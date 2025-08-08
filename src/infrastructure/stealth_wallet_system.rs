@@ -117,7 +117,7 @@ pub struct ShadowWallet {
     pub deep_cover_since: Instant,
     pub legend: DeepCoverLegend,    // Complete fake identity
     pub relationship_graph: HashMap<String, f64>, // Connections to other wallets
-    pub behavioral_model: BehavioralModel, // AI-generated behavior patterns
+    pub behavioral_model: BehavioralAnomaly, // AI-generated behavior patterns (using existing type)
     pub sleeper_activation: Option<Instant>, // When to activate
 }
 

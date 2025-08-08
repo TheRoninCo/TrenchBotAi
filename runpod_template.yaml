@@ -1,0 +1,139 @@
+# TrenchBot AI - RunPod A100 GPU Deployment Template
+# Ultra-Low Latency MEV Detection with Full AI Training Pipeline
+name: "trenchbot-ai-gpu-training"
+image: "runpod/pytorch:2.1.0-py3.10-cuda11.8.0-devel-ubuntu22.04"
+description: "TrenchBot AI - Complete MEV Detection System with GPU Training"
+
+# GPU Configuration - A100 SXM 80GB for maximum performance
+gpu_types:
+  - "NVIDIA A100-SXM-80GB"
+  - "NVIDIA A100-PCIE-80GB" 
+  - "NVIDIA H100-SXM-80GB"
+
+# Resource Requirements
+min_vcpu: 16
+min_memory: 64000  # 64GB RAM minimum
+min_gpu_memory: 40000  # 40GB GPU RAM minimum
+disk_size: 100000  # 100GB storage
+
+# Environment Variables
+env:
+  - name: "RUST_LOG"
+    value: "info"
+  - name: "CUDA_VISIBLE_DEVICES"
+    value: "0"
+  - name: "TORCH_CUDA_ARCH_LIST"
+    value: "8.0"  # A100 architecture
+  - name: "TRENCHBOT_MODE"
+    value: "gpu_training"
+  - name: "MODEL_SAVE_PATH"
+    value: "/workspace/models"
+
+# Startup Script
+startup_script: |
+  #!/bin/bash
+  set -e
+  
+  echo "🚀 TrenchBot AI - RunPod Deployment Starting..."
+  echo "================================================"
+  
+  # System Info
+  echo "📊 System Information:"
+  nvidia-smi
+  echo "CPU Cores: $(nproc)"
+  echo "RAM: $(free -h | grep Mem | awk '{print $2}')"
+  echo "Disk: $(df -h / | tail -1 | awk '{print $4}') available"
+  
+  # Install Rust if not present
+  if ! command -v cargo &> /dev/null; then
+      echo "🦀 Installing Rust..."
+      curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+      source ~/.cargo/env
+      rustup default stable
+  fi
+  
+  # Install system dependencies
+  echo "📦 Installing system dependencies..."
+  apt-get update
+  apt-get install -y \
+      build-essential \
+      pkg-config \
+      libssl-dev \
+      cmake \
+      git \
+      curl \
+      wget \
+      htop \
+      screen
+  
+  # Clone TrenchBot repository
+  cd /workspace
+  if [ ! -d "TrenchBotAi" ]; then
+      echo "📥 Cloning TrenchBot repository..."
+      git clone https://github.com/your-username/TrenchBotAi.git
+  fi
+  
+  cd TrenchBotAi
+  
+  # Install Python dependencies for PyTorch integration
+  echo "🐍 Setting up Python environment..."
+  pip install --upgrade pip
+  pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+  pip install numpy pandas matplotlib seaborn jupyter
+  
+  # Build TrenchBot with GPU features
+  echo "🔨 Building TrenchBot with GPU acceleration..."
+  export CUDA_ROOT=/usr/local/cuda
+  export LD_LIBRARY_PATH="$CUDA_ROOT/lib64:$LD_LIBRARY_PATH"
+  export PATH="$CUDA_ROOT/bin:$PATH"
+  
+  cargo build --release --features="gpu,cuda"
+  
+  # Create model directory
+  mkdir -p /workspace/models
+  
+  # Start TrenchBot AI Training
+  echo "🧠 Starting TrenchBot AI GPU Training Pipeline..."
+  echo "================================================"
+  
+  # Run the complete training demo
+  cargo run --release --features="gpu,cuda" --example gpu_training_demo
+  
+  echo "✅ TrenchBot AI deployment complete!"
+  echo "🎯 Access via RunPod web terminal or SSH"
+  echo "🔥 GPU training pipeline ready for MEV detection"
+
+# Exposed Ports
+ports:
+  - container_port: 8080
+    protocol: "TCP"
+    description: "TrenchBot API Server"
+  - container_port: 8888  
+    protocol: "TCP"
+    description: "Jupyter Notebook (optional)"
+  - container_port: 6006
+    protocol: "TCP"
+    description: "TensorBoard (optional)"
+
+# Volume Mounts
+volumes:
+  - container_path: "/workspace/models"
+    host_path: "models"
+    read_only: false
+  - container_path: "/workspace/data"
+    host_path: "training_data"
+    read_only: false
+
+# Health Check
+health_check:
+  path: "/health"
+  port: 8080
+  timeout: 30
+  interval: 60
+
+# Auto-scaling (for multi-pod deployments)
+scaling:
+  min_instances: 1
+  max_instances: 4
+  target_cpu_percent: 70
+  target_gpu_percent: 80

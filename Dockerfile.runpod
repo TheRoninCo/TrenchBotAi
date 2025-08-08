@@ -1,36 +1,108 @@
-# RunPod GPU-optimized container
+# TrenchBotAI RunPod Dockerfile for A100 SXM Training
 FROM nvidia/cuda:12.1-devel-ubuntu22.04
-RUN apt-get install -y python3-pip && \
-    pip install polars matplotlib jupyter
+
+# Prevent interactive prompts during package installation
+ENV DEBIAN_FRONTEND=noninteractive
+ENV NVIDIA_VISIBLE_DEVICES=all
+ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility
+
+# Set CUDA environment variables
+ENV CUDA_HOME=/usr/local/cuda-12.1
+ENV PATH=$CUDA_HOME/bin:$PATH
+ENV LD_LIBRARY_PATH=$CUDA_HOME/lib64:$LD_LIBRARY_PATH
+ENV TORCH_CUDA_ARCH_LIST="8.0"
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    git \
+    htop \
+    tmux \
+    vim \
+    wget \
+    unzip \
+    pkg-config \
+    libssl-dev \
+    cmake \
+    llvm-dev \
+    libclang-dev \
+    python3.10 \
+    python3.10-dev \
+    python3-pip \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create symbolic links for python
+RUN ln -s /usr/bin/python3.10 /usr/bin/python
+RUN ln -s /usr/bin/python3.10 /usr/bin/python3
+
+# Upgrade pip
+RUN python -m pip install --upgrade pip setuptools wheel
+
 # Install Rust
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-ENV PATH="/root/.cargo/bin:${PATH}"
+ENV PATH="/root/.cargo/bin:$PATH"
+RUN rustup default stable
+RUN rustup component add clippy rustfmt
 
-# Install PyTorch for GPU acceleration
-RUN pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+# Install Python packages with CUDA support
+RUN pip install \
+    torch==2.1.0+cu121 \
+    torchvision==0.16.0+cu121 \
+    torchaudio==2.1.0+cu121 \
+    --index-url https://download.pytorch.org/whl/cu121
 
-# Set working directory
-WORKDIR /app
+RUN pip install \
+    transformers>=4.30.0 \
+    accelerate>=0.20.0 \
+    datasets>=2.12.0 \
+    wandb>=0.15.0 \
+    numpy>=1.24.0 \
+    pandas>=2.0.0 \
+    scikit-learn>=1.3.0 \
+    matplotlib>=3.7.0 \
+    seaborn>=0.12.0 \
+    jupyter>=1.0.0 \
+    jupyterlab>=4.0.0 \
+    tensorboard>=2.13.0 \
+    flask>=2.3.0 \
+    fastapi>=0.100.0 \
+    uvicorn>=0.23.0 \
+    websockets>=11.0 \
+    aiofiles>=23.0.0 \
+    httpx>=0.24.0 \
+    pydantic>=2.0.0
 
-# Copy source
-COPY . .
+# Create workspace directory
+WORKDIR /workspace
 
-# Build with GPU features
-RUN cargo build --release --features gpu,training
+# Copy source code
+COPY . /workspace/
 
-# Set GPU environment
-ENV CUDA_VISIBLE_DEVICES=0
-ENV PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:512
+# Create necessary directories
+RUN mkdir -p /workspace/models /workspace/data /workspace/logs /workspace/checkpoints
 
-# Entry point
-CMD ["./target/release/mev-bot", "--mode", "gpu"]
-FROM rust:1.70-slim as builder
-WORKDIR /app
-COPY . .
-RUN cargo build --release
+# Set up environment variables
+ENV RUST_LOG=info
+ENV RUST_BACKTRACE=1
+ENV PYTHONPATH=/workspace
+ENV HF_HOME=/workspace/models/huggingface
+ENV TORCH_HOME=/workspace/models/torch
 
-FROM debian:bullseye-slim
-COPY --from=builder /app/target/release/whale-sonar /usr/local/bin/
-COPY configs /configs
+# Expose ports
+EXPOSE 8080 8888 6006 3000
 
-CMD ["whale-sonar", "--config", "/configs/sonar.toml"]
+# Set default command
+CMD ["bash", "-c", "source ~/.cargo/env && ./scripts/setup_runpod.sh && ./scripts/start_services.sh"]
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD nvidia-smi && curl -f http://localhost:8080/health || exit 1
+
+# Labels for RunPod
+LABEL maintainer="TrenchBotAI Team"
+LABEL version="1.0.0"
+LABEL description="Ultra-low latency AI trading system for Solana"
+LABEL gpu.required="true"
+LABEL gpu.type="A100-SXM"
+LABEL gpu.memory="80GB"

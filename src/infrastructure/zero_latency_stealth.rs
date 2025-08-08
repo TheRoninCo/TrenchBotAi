@@ -29,7 +29,7 @@ pub struct ZeroLatencyStealth {
     dimensional_storage: Arc<DimensionalWalletStorage>,
     
     // **CONSCIOUSNESS TRANSFER** - Move wallet awareness between identities
-    consciousness_transfer: Arc<ConsciousnessTransferEngine>,
+    // consciousness_transfer: Arc<ConsciousnessTransferEngine>,
     
     // **MEMETIC WARFARE** - Plant false patterns in competitor AIs
     memetic_warfare: Arc<MemeticWarfareEngine>,
@@ -183,6 +183,7 @@ pub struct DimensionalWallet {
 
 /// **BREAKTHROUGH 6: Consciousness Transfer Engine**
 /// Transfer wallet consciousness between identities at light speed
+/*
 #[derive(Debug)]
 pub struct ConsciousnessTransferEngine {
     pub consciousness_patterns: HashMap<String, ConsciousnessPattern>,
@@ -192,6 +193,7 @@ pub struct ConsciousnessTransferEngine {
     pub consciousness_compression: ConsciousnessCompression,
     pub soul_backup_system: SoulBackupSystem, // Backup consciousness patterns
 }
+*/
 
 #[derive(Debug, Clone)]
 pub struct ConsciousnessPattern {
@@ -511,6 +513,10 @@ impl NeuralWalletSwarm { async fn new() -> Result<Self> { Ok(Self { swarm_consci
 impl ProbabilityFieldManipulator { async fn new() -> Result<Self> { Ok(Self { quantum_field_equations: QuantumFieldEquations { field_strength: 0.99 }, probability_distortion: ProbabilityDistortion { field_strength: 0.95, distortion_radius: 100.0, quantum_tunneling_rate: 0.8, wave_function_collapse_delay: Duration::from_nanos(100), superposition_maintenance: 0.9 }, observer_effect_nullifier: ObserverEffectNullifier { nullification_strength: 0.99 }, detection_probability: AtomicU64::new(3), field_coherence_time: Duration::from_secs(60), uncertainty_amplifiers: vec![] }) } async fn maximize_success_probability(&self, _intent: &TransactionIntent) -> Result<()> { Ok(()) } }
 
 impl DimensionalWalletStorage { async fn new() -> Result<Self> { Ok(Self { active_dimensions: HashMap::new(), dimensional_gateway: DimensionalGateway { gateway_id: "primary".to_string() }, quantum_entanglement_bridges: vec![], dimensional_stability: AtomicU64::new(9999), materialization_cache: MaterializationCache { cache_size: 1000 }, void_storage_capacity: AtomicU64::new(1000000) }) } async fn materialize_optimal_wallet(&self) -> Result<DimensionalWallet> { Ok(DimensionalWallet { wallet_id: "dimensional_001".to_string(), dimensional_phase: 0.5, quantum_signature: QuantumSignature { signature: "quantum".to_string() }, materialization_energy: 100.0, dimensional_entanglement: vec![] }) } async fn manifest_wallet_army(&self) -> Result<DimensionalArmy> { Ok(DimensionalArmy { dimensions_accessed: 11, wallets_manifested: 1000, energy_consumed: 10000.0 }) } }
+
+// Missing struct definitions for ConsciousnessTransferEngine
+#[derive(Debug)] pub struct ConsciousnessTransferEngine { consciousness_patterns: HashMap<String, ConsciousnessPattern>, transfer_protocols: Vec<TransferProtocol>, neural_pathway_mapping: NeuralPathwayMapping, identity_matrix: IdentityMatrix, consciousness_compression: ConsciousnessCompression, soul_backup_system: SoulBackupSystem }
+#[derive(Debug)] pub struct TransferProtocol;
 
 impl ConsciousnessTransferEngine { async fn new() -> Result<Self> { Ok(Self { consciousness_patterns: HashMap::new(), transfer_protocols: vec![], neural_pathway_mapping: NeuralPathwayMapping { pathways: HashMap::new() }, identity_matrix: IdentityMatrix { matrix: vec![] }, consciousness_compression: ConsciousnessCompression { compression_ratio: 0.1 }, soul_backup_system: SoulBackupSystem { backups: HashMap::new() } }) } async fn select_optimal_pattern(&self, _intent: &TransactionIntent) -> Result<ConsciousnessPattern> { Ok(ConsciousnessPattern { pattern_id: "optimal".to_string(), neural_weights: vec![0.5; 1000], memory_traces: vec![], personality_matrix: PersonalityMatrix { traits: HashMap::new() }, behavioral_tendencies: vec![], consciousness_entropy: 0.8 }) } }
 

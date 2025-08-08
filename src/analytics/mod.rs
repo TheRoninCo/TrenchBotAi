@@ -31,7 +31,7 @@ pub mod rug_pull_detector;
 pub mod rug_pull_monitor;
 pub mod rug_pull_alerts;
 pub mod rug_pull_system;
-pub mod contract_analyzer;
+// pub mod contract_analyzer;
 pub mod alpha_detection;
 pub mod api;
 
