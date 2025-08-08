@@ -8,7 +8,7 @@ use tokio::time::{sleep, Duration};
 pub async fn typewriter_banner() -> anyhow::Result<()> {
     // 1) Render text
     let font = FIGfont::standard()
-        .ok_or_else(|| anyhow::anyhow!("Failed to load FIGlet font"))?;
+        .map_err(|_| anyhow::anyhow!("Failed to load FIGlet font"))?;
     let figure = font
         .convert("TRENCHBOTAI")
         .ok_or_else(|| anyhow::anyhow!("FIGlet conversion failed"))?;

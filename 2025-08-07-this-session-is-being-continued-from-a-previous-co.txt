@@ -1,0 +1,16 @@
+╭───────────────────────────────────────────────────╮
+│ ✻ Welcome to Claude Code!                         │
+│                                                   │
+│   /help for help, /status for your current setup  │
+│                                                   │
+│   cwd: /Users/rayarroyo/TrenchBotAi               │
+╰───────────────────────────────────────────────────╯
+⏺ Compact summary (ctrl+r to expand)
+  ⎿  Read tests/comprehensive_system_validation.rs (602 lines)
+  ⎿  Read tests/api_integration_tests.rs (665 lines)
+  ⎿  Read tests/capital_tier_integration_tests.rs (625 lines)
+  ⎿  Todo list read (6 items)
+  ⎿  Claude usage limit reached. Your limit will reset at 7pm (America/Chicago).
+
+      • /upgrade to increase your usage limit.
+

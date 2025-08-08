@@ -1,9 +1,5 @@
-use crate::observability::{
-    crypto::CryptoEngine,
-    metrics::{LogMetrics, serve_metrics},
-    sinks::{self, LogSink, SinkConfig, InstrumentedSink},
-    CombatLog, LogError, LogQuery, Alert
-};
+use crate::observability::{CombatLog, LogError, LogQuery, sinks::LogSink as ObservabilityLogSink};
+use super::super::sinks::{self, LogSink, SinkConfig, InstrumentedSink};
 use chrono::Utc;
 use std::{
     net::SocketAddr,

@@ -11,6 +11,7 @@ use solana_sdk::{
     signature::Signature,
     transaction::Transaction,
 };
+use solana_transaction_status::UiTransactionEncoding;
 use std::str::FromStr;
 use std::sync::Arc;
 use std::time::Duration;
@@ -159,7 +160,7 @@ impl SolanaRpc {
     pub async fn get_transaction(&self, signature: &str) -> Result<solana_client::rpc_response::EncodedConfirmedTransactionWithStatusMeta> {
         let signature = Signature::from_str(signature)?;
         let config = RpcTransactionConfig {
-            encoding: Some(solana_client::rpc_config::UiTransactionEncoding::Json),
+            encoding: Some(UiTransactionEncoding::Json),
             commitment: Some(CommitmentConfig::confirmed()),
             max_supported_transaction_version: Some(0),
         };

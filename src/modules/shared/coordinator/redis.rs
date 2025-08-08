@@ -1,4 +1,5 @@
 // src/modules/shared/coordinator/redis.rs
+#[cfg(feature = "redis")]
 use redis::{Client, Commands};
 use serde_json::Value;
 use std::sync::Arc;

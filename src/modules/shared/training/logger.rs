@@ -8,7 +8,7 @@ use {
         path::Path,
         sync::{Arc, Mutex},
     },
-    super::super::mev::{BundleFeatures, MevScore},
+    crate::modules::mev::types::{BundleFeatures, MevScore},
 };
 
 pub struct TrainingLogger {

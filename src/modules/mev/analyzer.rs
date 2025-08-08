@@ -19,7 +19,9 @@ pub struct BundleAnalyzer {
 
 /// Prometheus metrics for analyzer
 struct AnalyzerMetrics {
+    #[cfg(feature = "monitoring")]
     extraction_time: prometheus::HistogramVec,
+    #[cfg(feature = "monitoring")]
     account_access: prometheus::IntCounterVec,
 }
 
@@ -39,6 +41,7 @@ impl BundleAnalyzer {
         sim_result: &RpcSimulateTransactionResult,
         slot: u64,
     ) -> BundleFeatures {
+        #[cfg(feature = "monitoring")]
         let _timer = self.metrics.extraction_time
             .with_label_values(&["full"])
             .start_timer();
@@ -59,6 +62,7 @@ impl BundleAnalyzer {
 
     #[instrument(skip(self, txs))]
     fn extract_accounts(&mut self, txs: &[Transaction]) -> Vec<Pubkey> {
+        #[cfg(feature = "monitoring")]
         let _timer = self.metrics.extraction_time
             .with_label_values(&["accounts"])
             .start_timer();
@@ -67,6 +71,7 @@ impl BundleAnalyzer {
         for tx in txs {
             for key in &tx.message.account_keys {
                 *accounts.entry(*key).or_insert(0) += 1;
+                #[cfg(feature = "monitoring")]
                 self.metrics.account_access
                     .with_label_values(&[&key.to_string()])
                     .inc();
@@ -86,6 +91,7 @@ impl BundleAnalyzer {
 
     #[instrument(skip(self, txs))]
     fn extract_programs(&self, txs: &[Transaction]) -> Vec<String> {
+        #[cfg(feature = "monitoring")]
         let _timer = self.metrics.extraction_time
             .with_label_values(&["programs"])
             .start_timer();
@@ -133,11 +139,13 @@ impl BundleAnalyzer {
 
     fn init_metrics() -> AnalyzerMetrics {
         AnalyzerMetrics {
+            #[cfg(feature = "monitoring")]
             extraction_time: prometheus::register_histogram_vec!(
                 "mev_analyzer_extraction_time_seconds",
                 "Time taken for feature extraction",
                 &["stage"]
             ).unwrap(),
+            #[cfg(feature = "monitoring")]
             account_access: prometheus::register_int_counter_vec!(
                 "mev_account_access_total",
                 "Count of account accesses",

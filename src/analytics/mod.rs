@@ -3,7 +3,7 @@
 
 use anyhow::Result;
 use serde::{Deserialize, Serialize};
-use std::collections::{HashMap, LruCache};
+use std::collections::HashMap;
 use std::num::NonZeroUsize;
 use chrono::{DateTime, Utc};
 use rayon::prelude::*;
@@ -12,16 +12,28 @@ use ndarray::{Array1, Axis};
 #[cfg(feature = "gpu")]
 use tch;
 
-// Re-export submodules
-pub use chaos_index::ChaosAnalyzer;
-pub use whale_clustering::WhaleClusterer;
-pub use pattern_recognition::PatternRecognizer;
-pub use profit_prediction::ProfitPredictor;
+// Re-export submodules - commented out until needed
+// pub use chaos_index::ChaosAnalyzer;
+// pub use whale_clustering::WhaleClusterer;
+// pub use pattern_recognition::PatternRecognizer;
+// pub use profit_prediction::ProfitPredictor;
+pub use rug_pull_detector::{RugPullDetector, RugPullAlert, EarlyInvestorCluster, RiskLevel};
+pub use rug_pull_monitor::{RugPullMonitor, RugPullEvent, MonitoringStatus};
+pub use rug_pull_alerts::{AlertManager, AlertConfig, AlertDeliveryService, AlertMessage, AlertStats};
+pub use rug_pull_system::{RugPullSystem, RugPullSystemBuilder, SimpleRugPullDetector, SystemHealth};
 
-pub mod chaos_index;
-pub mod whale_clustering;
-pub mod pattern_recognition;
-pub mod profit_prediction;
+// Note: These modules are implemented inline below
+// pub mod chaos_index;
+// pub mod whale_clustering; 
+// pub mod pattern_recognition;
+// pub mod profit_prediction;
+pub mod rug_pull_detector;
+pub mod rug_pull_monitor;
+pub mod rug_pull_alerts;
+pub mod rug_pull_system;
+pub mod contract_analyzer;
+pub mod alpha_detection;
+pub mod api;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MarketChaos {
@@ -61,14 +73,18 @@ pub struct TradePatterns {
     pub risk_tolerance: f64,
 }
 
-// Main Analytics Engine
+// Main Analytics Engine - commented out until other modules are implemented
+/*
 pub struct AnalyticsEngine {
     chaos_analyzer: chaos_index::ChaosAnalyzer,
     whale_clusterer: whale_clustering::WhaleClusterer,
     pattern_recognizer: pattern_recognition::PatternRecognizer,
     profit_predictor: profit_prediction::ProfitPredictor,
+    rug_pull_detector: rug_pull_detector::RugPullDetector,
 }
+*/
 
+/*
 impl AnalyticsEngine {
     pub fn new() -> Result<Self> {
         Ok(Self {
@@ -76,6 +92,7 @@ impl AnalyticsEngine {
             whale_clusterer: whale_clustering::WhaleClusterer::new()?,
             pattern_recognizer: pattern_recognition::PatternRecognizer::new()?,
             profit_predictor: profit_prediction::ProfitPredictor::new()?,
+            rug_pull_detector: rug_pull_detector::RugPullDetector::new(),
         })
     }
 
@@ -109,7 +126,23 @@ impl AnalyticsEngine {
     pub async fn predict_profit_gpu(&self, opportunities: &[Opportunity]) -> Result<Vec<f64>> {
         self.profit_predictor.predict_gpu_batch(opportunities).await
     }
+
+    /// Analyze transactions for coordinated rug pull patterns
+    pub async fn detect_coordinated_rug_pulls(&mut self, transactions: &[Transaction]) -> Result<Vec<RugPullAlert>> {
+        self.rug_pull_detector.analyze_transactions(transactions).await
+    }
+
+    /// Get currently active rug pull clusters being monitored
+    pub fn get_active_rug_pull_clusters(&self) -> &std::collections::HashMap<String, Vec<EarlyInvestorCluster>> {
+        self.rug_pull_detector.get_active_clusters()
+    }
+
+    /// Cleanup old rug pull clusters (call periodically)
+    pub fn cleanup_old_rug_pull_data(&mut self) {
+        self.rug_pull_detector.cleanup_old_clusters(24); // 24 hours
+    }
 }
+*/
 
 #[derive(Debug)]
 pub struct MarketSnapshot {
@@ -188,7 +221,8 @@ impl TrainingDataset {
     }
 }
 
-// Chaos Index Implementation
+/* 
+// Chaos Index Implementation - commented out for now
 pub mod chaos_index {
     use super::*;
     
@@ -574,3 +608,4 @@ pub mod profit_prediction {
         }
     }
 }
+*/

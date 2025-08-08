@@ -1,6 +1,15 @@
 use solana_sdk::pubkey::Pubkey;
-use std::collections::VecDeque;
+use std::collections::{VecDeque, HashMap};
 use serde::{Serialize, Deserialize};
+use solana_client::rpc_client::RpcClient;
+use solana_client::rpc_response::RpcConfirmedTransactionStatusWithSignature;
+use solana_client::rpc_config::RpcTransactionConfig;
+use std::sync::Arc;
+use anyhow::Result;
+use solana_sdk::transaction::Transaction;
+#[cfg(feature = "spl-token")]
+use spl_token::{instruction::TokenInstruction, state::Account as TokenAccount};
+use solana_sdk::{instruction::CompiledInstruction, message::Message};
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub enum WhalePersonality {
@@ -19,6 +28,18 @@ pub struct WalletBehavior {
     pub trade_size_stddev: f64, // Consistency of trade sizes
     pub token_diversity: u8,    // Number of unique tokens held
     pub reversal_rate: f64,     // % of trades that reverse direction
+}
+
+impl Default for WalletBehavior {
+    fn default() -> Self {
+        Self {
+            velocity: 0.0,
+            holding_period: 0.0,
+            trade_size_stddev: 0.0,
+            token_diversity: 0,
+            reversal_rate: 0.0,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -88,24 +109,18 @@ impl PersonalityEngine {
         // Implement wash trade detection
         0.0
     }
-    use solana_sdk::{
-        pubkey::Pubkey,
-        instruction::CompiledInstruction,
-        message::Message,
-    };
-    use spl_token::{
-        instruction::TokenInstruction,
-        state::Account as TokenAccount,
-    };
-    use solana_client::{
-        rpc_client::RpcClient,
-        rpc_config::RpcTransactionConfig,
-    };
-    use std::{collections::{HashMap, HashSet, VecDeque}, sync::Arc};
-    use tokio::sync::Mutex;
     
-    #[derive(Debug)]
-    struct TokenTransfer {
+    fn update_history(&mut self, wallet: &Pubkey, behavior: WalletBehavior) {
+        let history = self.behavior_history.entry(*wallet).or_insert_with(VecDeque::new);
+        history.push_back(behavior);
+        if history.len() > 100 {
+            history.pop_front();
+        }
+    }
+}
+
+#[derive(Debug)]
+struct TokenTransfer {
         from: Pubkey,
         to: Pubkey,
         mint: Pubkey,
@@ -113,8 +128,8 @@ impl PersonalityEngine {
         timestamp: i64,
         is_buy: bool,  // Relative to tracked wallet
     }
-    
-    impl PersonalityEngine {
+
+impl PersonalityEngine {
         async fn fetch_transfers(
             &self,
             wallet: &Pubkey,
@@ -145,6 +160,7 @@ impl PersonalityEngine {
             let account_keys = &tx.message.account_keys;
     
             for (i, ix) in tx.message.instructions.iter().enumerate() {
+                #[cfg(feature = "spl-token")]
                 if let Ok(token_ix) = TokenInstruction::unpack(&ix.data) {
                     match token_ix {
                         TokenInstruction::Transfer { amount } => {
@@ -169,6 +185,7 @@ impl PersonalityEngine {
             Ok(if transfers.is_empty() { None } else { Some(transfers) })
         }
     
+        #[cfg(feature = "spl-token")]
         async fn resolve_mint(
             &self,
             accounts: &[u8],
@@ -180,4 +197,13 @@ impl PersonalityEngine {
             let token_account = TokenAccount::unpack(&account_data)?;
             Ok(token_account.mint)
         }
-    }}
+        
+        #[cfg(not(feature = "spl-token"))]
+        async fn resolve_mint(
+            &self,
+            _accounts: &[u8],
+            _tx: &Transaction,
+        ) -> Result<Pubkey> {
+            Ok(Pubkey::default())
+        }
+    }

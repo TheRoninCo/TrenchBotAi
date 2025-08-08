@@ -1,5 +1,8 @@
 use std::{collections::HashMap, path::Path, sync::Arc};
+#[cfg(feature = "ai")]
 use tract_onnx::prelude::*;
+#[cfg(not(feature = "ai"))]
+type RunnableModel<T> = ();
 
 pub struct TokenPredictor {
     models: HashMap<String, RunnableModel<f32>>,
@@ -38,11 +41,18 @@ impl TokenPredictor {
         tip: f32,
         cu: f32,
     ) -> anyhow::Result<f32> {
-        let input = tract_ndarray::arr1(&[personality, velocity, imbalance, tip, cu]).into();
+        #[cfg(feature = "ai")]
+        let input = ndarray::arr1(&[personality, velocity, imbalance, tip, cu]).into_dyn().into();
+        #[cfg(not(feature = "ai"))]
+        let input = ();
         
+        #[cfg(feature = "ai")]
         match self.models.get(token) {
             Some(model) => Ok(model.run(tvec!(input))?[0].to_scalar::<f32>()?),
             None => Ok(self.fallback_model.run(tvec!(input))?[0].to_scalar::<f32>()?),
         }
+        
+        #[cfg(not(feature = "ai"))]
+        Ok(0.5) // Fallback prediction
     }
 }

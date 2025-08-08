@@ -11,8 +11,7 @@ pub async fn run_matrix_rain() -> anyhow::Result<()> {
         for (x, y) in ypos.iter_mut().enumerate() {
             stdout()
                 .queue(cursor::MoveTo(x as u16, *y))?
-                .queue(Print("\x1B[38;5;46m".to_string()))?  // bright green
-                .unwrap();
+                .queue(Print("\x1B[38;5;46m".to_string()))?;  // bright green
             let c = thread_rng().gen_range(33u8..126u8) as char;
             stdout().queue(Print(c))?;
             *y = if *y >= rows { 0 } else { *y + 1 };

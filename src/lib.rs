@@ -3,6 +3,15 @@ use thiserror::Error;
 use figment::{Figment, providers::{Toml, Env, Format}};
 
 pub mod sdk;
+pub mod analytics;
+pub mod strategies;
+pub mod infrastructure;
+pub mod modules;
+pub mod types;
+pub mod ai_engines;
+pub mod war;
+pub mod ui;
+pub mod observability;
 
 /// Core configuration and error types
 #[derive(Debug, Serialize, Deserialize, Clone)]

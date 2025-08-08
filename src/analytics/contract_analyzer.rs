@@ -757,12 +757,9 @@ impl WalletTracker { async fn new() -> Result<Self> { Ok(Self { whale_wallets: A
 
 // Missing type definitions (stubs for compilation)
 #[derive(Debug, Clone)] pub struct ContractPatternDetector;
-#[derive(Debug, Clone)] pub struct VulnerabilityScanner;
+#[derive(Debug, Clone)] pub struct VulnerabilityScanner;  
 #[derive(Debug, Clone)] pub struct HoneypotDetector;
 #[derive(Debug, Clone)] pub struct RugPullPredictor;
-#[derive(Debug, Clone)] pub struct RelationshipMapper;
-#[derive(Debug, Clone)] pub struct ContractAnalysisEngine;
-#[derive(Debug, Clone)] pub struct OnChainMovementMonitor;
 #[derive(Debug, Clone)] pub struct WhaleWallet;
 #[derive(Debug, Clone)] pub struct ScammerWallet;
 #[derive(Debug, Clone)] pub struct InsiderWallet;
@@ -787,12 +784,30 @@ impl WalletTracker { async fn new() -> Result<Self> { Ok(Self { whale_wallets: A
 #[derive(Debug, Clone)] pub struct BotWeakness;
 #[derive(Debug, Clone)] pub struct BytecodeAnalyzer;
 
+// Additional missing types from compilation errors
+#[derive(Debug, Clone)] pub struct FunctionAnalyzer;
+#[derive(Debug, Clone)] pub struct StateAnalyzer;
+#[derive(Debug, Clone)] pub struct UpgradeAnalyzer;
+#[derive(Debug, Clone)] pub struct OwnershipAnalyzer;
+#[derive(Debug, Clone)] pub struct TokenomicsAnalyzer;
+#[derive(Debug, Clone)] pub struct LiquidityAnalyzer;
+#[derive(Debug, Clone)] pub struct AccessControlAnalyzer;
+#[derive(Debug, Clone)] pub struct SuspiciousFunction;
+#[derive(Debug, Clone)] pub struct OwnershipStructure;
+#[derive(Debug, Clone)] pub struct TokenomicsAnalysis;
+#[derive(Debug, Clone)] pub struct LiquidityAnalysis;
+#[derive(Debug, Clone)] pub struct UpgradeMechanism;
+#[derive(Debug, Clone)] pub struct RugPullIndicator;
+#[derive(Debug, Clone)] pub struct HoneypotIndicator;
+#[derive(Debug, Clone)] pub struct Backdoor;
+#[derive(Debug, Clone)] pub struct SocialEngineeringVector;
+#[derive(Debug, Clone)] pub struct ExploitDifficulty;
+#[derive(Debug, Clone)] pub struct PotentialImpact;
+#[derive(Debug, Clone)] pub struct LargeTransferDetector;
+
 impl ContractPatternDetector { fn new() -> Self { Self } }
 impl VulnerabilityScanner { fn new() -> Self { Self } }
 impl HoneypotDetector { fn new() -> Self { Self } }
 impl RugPullPredictor { fn new() -> Self { Self } }
-impl RelationshipMapper { fn new() -> Self { Self } }
-impl ContractAnalysisEngine { fn new() -> Self { Self } }
-impl OnChainMovementMonitor { fn new() -> Self { Self } }
 
 // Hundreds more implementation stubs would be included in the complete system...

@@ -1,3 +1,4 @@
+#[cfg(feature = "redis")]
 use redis::{Client, Commands};
 use solana_sdk::pubkey::Pubkey;
 use serde_json;

@@ -1,3 +1,4 @@
+#[cfg(feature = "monitoring")]
 use prometheus::core::{AtomicI64, GenericCounter};
 use serde::{Serialize, Deserialize};
 use std::fmt;

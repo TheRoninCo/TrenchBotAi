@@ -1,5 +1,5 @@
 use crossterm::style::Stylize;
-use sysinfo::{CpuExt, System, SystemExt};
+use sysinfo::System;
 use tokio::time::Instant;
 
 /// Prints version + either GPU info or CPU info, plus ping.
