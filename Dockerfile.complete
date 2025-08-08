@@ -1,0 +1,223 @@
+# Complete TrenchBotAi Training Container
+# Optimized for RunPod A100 GPU training
+
+FROM nvidia/cuda:12.1-devel-ubuntu22.04
+
+# Prevent interactive prompts during apt install
+ENV DEBIAN_FRONTEND=noninteractive
+
+# System dependencies
+RUN apt-get update && apt-get install -y \
+    # Build tools
+    build-essential \
+    pkg-config \
+    libssl-dev \
+    # Python and ML tools
+    python3 \
+    python3-pip \
+    python3-dev \
+    # Network tools
+    wget \
+    curl \
+    git \
+    # System utilities
+    htop \
+    nvtop \
+    tmux \
+    vim \
+    # Clean up
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Rust with all components
+RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y \
+    --default-toolchain stable \
+    --profile complete \
+    --component rustfmt clippy
+ENV PATH="/root/.cargo/bin:${PATH}"
+
+# Install Python ML stack optimized for A100
+RUN pip3 install --no-cache-dir \
+    # PyTorch with CUDA 12.1 support
+    torch==2.1.0+cu121 \
+    torchvision==0.16.0+cu121 \
+    torchaudio==2.1.0+cu121 \
+    --index-url https://download.pytorch.org/whl/cu121 && \
+    pip3 install --no-cache-dir \
+    # Data processing
+    polars \
+    pandas \
+    numpy \
+    # Visualization
+    matplotlib \
+    seaborn \
+    plotly \
+    # ML tools
+    scikit-learn \
+    transformers \
+    datasets \
+    tokenizers \
+    # Development tools
+    jupyter \
+    jupyterlab \
+    tensorboard \
+    wandb \
+    # Performance monitoring
+    psutil \
+    GPUtil
+
+# Install additional Rust crates for ML
+RUN cargo install \
+    cargo-watch \
+    cargo-expand \
+    cargo-edit
+
+# Create workspace directories
+WORKDIR /workspace
+RUN mkdir -p \
+    /workspace/data \
+    /workspace/models \
+    /workspace/logs \
+    /workspace/config \
+    /workspace/src
+
+# Copy application code
+COPY . /workspace/src/
+WORKDIR /workspace/src
+
+# Create training configuration
+RUN mkdir -p /workspace/config && cat > /workspace/config/training.toml << 'EOF'
+[training]
+name = "trenchbot_quantum_mev"
+mode = "gpu_accelerated"
+precision = "fp16"  # Mixed precision for A100 optimization
+
+[model]
+architecture = "transformer_quantum_hybrid"
+hidden_size = 2048
+num_layers = 24
+num_heads = 32
+sequence_length = 2048
+
+[optimization]
+optimizer = "adamw"
+learning_rate = 1e-4
+weight_decay = 0.01
+warmup_steps = 1000
+gradient_clipping = 1.0
+
+[data]
+batch_size = 64
+num_workers = 8
+prefetch_factor = 4
+pin_memory = true
+
+[hardware]
+accelerator = "GPU"
+mixed_precision = true
+gradient_checkpointing = true
+compile_model = true
+
+[monitoring]
+log_interval = 10
+eval_interval = 100
+save_interval = 1000
+early_stopping_patience = 10
+
+[features]
+quantum_algorithms = true
+mev_detection = true
+rug_pull_prediction = true
+whale_tracking = true
+arbitrage_optimization = true
+EOF
+
+# Build optimized release binary with all features
+RUN cargo build --release --features "gpu,training,ai,monitoring"
+
+# Create startup script
+RUN cat > /workspace/start_training.sh << 'EOF'
+#!/bin/bash
+
+echo "🚀 TrenchBotAi Training Environment Starting..."
+
+# GPU info
+echo "📊 GPU Information:"
+nvidia-smi --query-gpu=name,memory.total,memory.free --format=csv,noheader,nounits
+
+# Start monitoring services
+echo "🔧 Starting monitoring services..."
+jupyter lab --ip=0.0.0.0 --port=8888 --allow-root --no-browser --NotebookApp.token='' &
+tensorboard --logdir=/workspace/logs --bind_all --port=6006 &
+
+# Initialize training data if needed
+if [ ! -f "/workspace/data/training/market_data.parquet" ]; then
+    echo "📥 Initializing training data..."
+    ./target/release/trenchbot-dex data collect --output /workspace/data/training/
+fi
+
+# Start training
+echo "🧠 Starting AI Training..."
+./target/release/trenchbot-dex train \
+    --config /workspace/config/training.toml \
+    --data-path /workspace/data/training \
+    --output-path /workspace/models \
+    --log-path /workspace/logs
+
+echo "✅ Training complete!"
+EOF
+
+RUN chmod +x /workspace/start_training.sh
+
+# Create health check endpoint
+RUN cat > /workspace/health_check.py << 'EOF'
+#!/usr/bin/env python3
+import json
+import time
+from http.server import HTTPServer, BaseHTTPRequestHandler
+import GPUtil
+import psutil
+
+class HealthHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        if self.path == '/health':
+            try:
+                gpu = GPUtil.getGPUs()[0]
+                health = {
+                    "status": "healthy",
+                    "timestamp": time.time(),
+                    "gpu_utilization": gpu.load * 100,
+                    "gpu_memory_used": gpu.memoryUsed,
+                    "gpu_memory_total": gpu.memoryTotal,
+                    "cpu_percent": psutil.cpu_percent(),
+                    "memory_percent": psutil.virtual_memory().percent
+                }
+                self.send_response(200)
+                self.send_header('Content-type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps(health).encode())
+            except Exception as e:
+                self.send_response(500)
+                self.send_header('Content-type', 'application/json')
+                self.end_headers()
+                self.wfile.write(json.dumps({"status": "error", "message": str(e)}).encode())
+
+if __name__ == '__main__':
+    server = HTTPServer(('0.0.0.0', 9090), HealthHandler)
+    server.serve_forever()
+EOF
+
+RUN chmod +x /workspace/health_check.py
+
+# Set environment variables for optimal A100 performance
+ENV CUDA_VISIBLE_DEVICES=0
+ENV PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:512
+ENV TOKENIZERS_PARALLELISM=true
+ENV OMP_NUM_THREADS=16
+ENV MKL_NUM_THREADS=16
+ENV RUST_LOG=trenchbot_dex=info
+
+# Expose ports
+EXPOSE 8888 6006 9090 8000
+
+# Default command
+CMD ["/workspace/start_training.sh"]

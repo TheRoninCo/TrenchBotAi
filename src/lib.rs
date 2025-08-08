@@ -12,6 +12,7 @@ pub mod ai_engines;
 pub mod war;
 pub mod ui;
 pub mod observability;
+pub mod training;
 
 /// Core configuration and error types
 #[derive(Debug, Serialize, Deserialize, Clone)]

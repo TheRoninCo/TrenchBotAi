@@ -1,0 +1,137 @@
+# TrenchBotAi Complete RunPod Training Template
+# Ultra-High Performance GPU Training Environment
+
+apiVersion: runpod.io/v1
+kind: Template
+metadata:
+  name: trenchbot-ai-training
+  description: "Complete AI trading system training on A100 GPUs"
+  tags: ["trading", "ai", "solana", "mev", "gpu", "a100"]
+
+spec:
+  # Hardware Requirements
+  containerDisk: 100G  # Increased for model storage
+  gpuType: A100        # High-memory GPU for large models
+  gpuCount: 1          # Can scale to 2-8 for distributed training
+  
+  # Base Image with all dependencies
+  image: trenchbot/ai-trainer:cuda121
+  
+  # Environment Configuration
+  env:
+    # CUDA Configuration
+    - name: CUDA_VISIBLE_DEVICES
+      value: "0"
+    - name: PYTORCH_CUDA_ALLOC_CONF
+      value: "max_split_size_mb:512"
+    - name: NVIDIA_VISIBLE_DEVICES
+      value: "all"
+    
+    # Training Configuration
+    - name: TRAINING_MODE
+      value: "quantum_mev"
+    - name: BATCH_SIZE
+      value: "256"
+    - name: LEARNING_RATE
+      value: "0.001"
+    - name: MAX_EPOCHS
+      value: "1000"
+    
+    # Data Configuration
+    - name: DATA_SOURCE
+      value: "helius_solscan_jupiter"
+    - name: TRAINING_DATA_PATH
+      value: "/workspace/data/training"
+    - name: MODEL_OUTPUT_PATH
+      value: "/workspace/models"
+    
+    # Performance Optimization
+    - name: RUST_LOG
+      value: "trenchbot_dex=info"
+    - name: TOKENIZERS_PARALLELISM
+      value: "true"
+    - name: OMP_NUM_THREADS
+      value: "16"
+
+  # Volume Mounts
+  volumes:
+    - name: training-data
+      hostPath: /workspace/data
+      containerPath: /workspace/data
+      size: 500G
+    
+    - name: model-storage
+      hostPath: /workspace/models  
+      containerPath: /workspace/models
+      size: 100G
+      
+    - name: logs
+      hostPath: /workspace/logs
+      containerPath: /workspace/logs
+      size: 50G
+
+  # Network Configuration
+  ports:
+    - containerPort: 8888
+      name: jupyter
+      protocol: TCP
+    - containerPort: 6006  
+      name: tensorboard
+      protocol: TCP
+    - containerPort: 9090
+      name: metrics
+      protocol: TCP
+    - containerPort: 8000
+      name: api
+      protocol: TCP
+
+  # Startup Configuration
+  containerSpec:
+    workingDir: /workspace
+    command: ["/bin/bash", "-c"]
+    args:
+      - |
+        # Initialize training environment
+        echo "🚀 Initializing TrenchBotAi Training Environment..."
+        
+        # Setup GPU monitoring
+        nvidia-smi &
+        
+        # Start Jupyter for interactive development
+        jupyter lab --ip=0.0.0.0 --port=8888 --allow-root --no-browser &
+        
+        # Start TensorBoard for training visualization
+        tensorboard --logdir=/workspace/logs --bind_all --port=6006 &
+        
+        # Start metrics server
+        cargo run --release --features gpu,training -- serve-metrics --port 9090 &
+        
+        # Main training loop
+        echo "🧠 Starting AI Model Training..."
+        cargo run --release --features gpu,training -- train \
+          --config /workspace/config/training.toml \
+          --data-path /workspace/data/training \
+          --output-path /workspace/models \
+          --gpu-accelerated \
+          --batch-size ${BATCH_SIZE} \
+          --learning-rate ${LEARNING_RATE} \
+          --max-epochs ${MAX_EPOCHS}
+
+  # Health Checks
+  healthCheck:
+    httpGet:
+      path: /health
+      port: 9090
+    initialDelaySeconds: 30
+    periodSeconds: 10
+
+  # Resource Limits
+  resources:
+    limits:
+      memory: "64Gi"
+      cpu: "16"
+      nvidia.com/gpu: 1
+    requests:
+      memory: "32Gi" 
+      cpu: "8"
+      nvidia.com/gpu: 1
