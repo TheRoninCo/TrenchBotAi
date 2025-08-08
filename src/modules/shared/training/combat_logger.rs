@@ -1,4 +1,4 @@
-use crate::observability::{OmniLogger, CombatLog, LogSeverity, LogError};
+use crate::observability::{CombatLog, LogError, OmniLogger, LogSeverity};
 use serde::Serialize;
 use serde_json::json;
 use once_cell::sync::Lazy;
@@ -6,7 +6,7 @@ use std::sync::{Arc, Mutex};
 use uuid::Uuid;
 
 /// Global thread-safe logger instance
-static COMBAT_LOGGER: Lazy<Arc<Mutex<Option<OmniLogger>>>> = Lazy::new(|| {
+static COMBAT_LOGGER: Lazy<Arc<Mutex<Option<(OmniLogger, CombatContext)>>>> = Lazy::new(|| {
     Arc::new(Mutex::new(None))
 });
 
@@ -101,7 +101,41 @@ pub mod severity {
         log_event(LogSeverity::Debug, system, event, payload, context).await
     }
 
-    // ... info, warn, error, critical ...
+    pub async fn info<T: Serialize>(
+        system: &str,
+        event: &str,
+        payload: T,
+        context: Option<CombatContext>
+    ) -> Result<(), LogError> {
+        log_event(LogSeverity::Info, system, event, payload, context).await
+    }
+
+    pub async fn warn<T: Serialize>(
+        system: &str,
+        event: &str,
+        payload: T,
+        context: Option<CombatContext>
+    ) -> Result<(), LogError> {
+        log_event(LogSeverity::Warn, system, event, payload, context).await
+    }
+
+    pub async fn error<T: Serialize>(
+        system: &str,
+        event: &str,
+        payload: T,
+        context: Option<CombatContext>
+    ) -> Result<(), LogError> {
+        log_event(LogSeverity::Error, system, event, payload, context).await
+    }
+
+    pub async fn critical<T: Serialize>(
+        system: &str,
+        event: &str,
+        payload: T,
+        context: Option<CombatContext>
+    ) -> Result<(), LogError> {
+        log_event(LogSeverity::Critical, system, event, payload, context).await
+    }
 }
 
 /// Distributed tracing utilities

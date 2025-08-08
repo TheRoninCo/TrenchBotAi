@@ -1,12 +1,13 @@
-use crate::observability::{
-    CombatLog, LogError, LogQuery, sinks::{LogSink, SinkHealth, RetryPolicy}
-};
-use mongodb::{options::{ClientOptions, FindOptions}, Client};
-use std::{any::Any, time::Instant};
-use futures::stream::TryStreamExt;
+use super::{LogSink, SinkHealth, RetryPolicy};
+#[cfg(feature = "mongodb")]
+use mongodb::{options::ClientOptions, Client};
+use std::time::Instant;
+use serde::{Deserialize, Serialize};
+use async_trait::async_trait;
+use anyhow::Result;
 
 #[derive(Debug, Deserialize)]
-pub struct Config {
+pub struct MongoConfig {
     pub uri: String,
     pub collection: Option<String>,
 }
@@ -17,9 +18,11 @@ pub struct MongoSink {
 }
 
 impl MongoSink {
-    pub async fn new(cfg: &Config) -> Result<Self, LogError> {
-        let opts = ClientOptions::parse(&cfg.uri).await?;
-        let client = Client::with_options(opts)?;
+    pub async fn new(cfg: &MongoConfig) -> Result<Self> {
+        let opts = ClientOptions::parse(&cfg.uri).await
+            .map_err(|e| anyhow::anyhow!("Failed to parse MongoDB URI: {}", e))?;
+        let client = Client::with_options(opts)
+            .map_err(|e| anyhow::anyhow!("Failed to create MongoDB client: {}", e))?;
         Ok(Self {
             client,
             collection: cfg.collection.clone().unwrap_or_else(|| "combat_logs".into()),
@@ -27,33 +30,27 @@ impl MongoSink {
     }
 }
 
-#[async_trait::async_trait]
+#[async_trait]
 impl LogSink for MongoSink {
-    fn name(&self) -> &'static str {
-        "MongoSink"
-    }
-
-    fn as_any(&self) -> &dyn Any {
-        self
-    }
-
-    async fn write(&self, log: &CombatLog) -> Result<(), LogError> {
+    async fn write_log<T: Serialize + Send + Sync>(&self, log: T) -> Result<()> {
         let _start = Instant::now();
         self.client
             .database("trenchbot")
             .collection(&self.collection)
-            .insert_one(log, None)
-            .await?;
-        // you could record latency here if desired
+            .insert_one(&log, None)
+            .await
+            .map_err(|e| anyhow::anyhow!("Failed to write to MongoDB: {}", e))?;
         Ok(())
     }
 
-    async fn flush(&self) -> Result<(), LogError> {
-        // no-op
+    async fn flush(&self) -> Result<()> {
+        // MongoDB auto-flushes, so this is a no-op
         Ok(())
     }
+}
 
-    fn health_check(&self) -> SinkHealth {
+impl MongoSink {
+    pub fn health_check(&self) -> SinkHealth {
         // Try a cheap ping with list_collections (or similar)
         let alive = match futures::executor::block_on(
             self.client.database("trenchbot").list_collection_names(None)
@@ -65,35 +62,19 @@ impl LogSink for MongoSink {
             }
         };
 
-        SinkHealth {
-            alive,
-            latency:   None,                // we don't track this here
-            queue_depth: 0,                 // no internal queue
-            last_error: if alive { None } else { Some("ping failed".into()) },
+        if alive {
+            SinkHealth::Healthy
+        } else {
+            SinkHealth::Failing { reason: "Connection failed".to_string() }
         }
     }
 
-    fn retry_policy(&self) -> RetryPolicy {
-        // Mongo is generally reliable; fewer retries
-        RetryPolicy { max_retries: 1, backoff: std::time::Duration::from_millis(50) }
-    }
-
-    async fn query(&self, query: &LogQuery) -> Result<Vec<CombatLog>, LogError> {
-        let mut filter = query.into_document();
-        let options = FindOptions::builder()
-            .limit(query.limit)
-            .build();
-
-        let mut cursor = self.client
-            .database("trenchbot")
-            .collection::<CombatLog>(&self.collection)
-            .find(filter, options)
-            .await?;
-
-        let mut logs = Vec::new();
-        while let Some(log) = cursor.try_next().await? {
-            logs.push(log);
+    pub fn get_retry_policy(&self) -> RetryPolicy {
+        RetryPolicy { 
+            max_retries: 3,
+            initial_delay_ms: 100,
+            max_delay_ms: 5000,
+            backoff_multiplier: 2.0,
         }
-        Ok(logs)
     }
 }
